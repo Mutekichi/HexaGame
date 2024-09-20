@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 [ExecuteAlways]
@@ -50,7 +51,6 @@ public class TriangleTileBehaviour : MonoBehaviour
                 SetUpward(false);
                 break;
             case TriangleGridUtility.GridPositionState.OnVertex:
-                // 頂点上にある場合の処理は変更しません
                 break;
         }
     }
@@ -69,12 +69,18 @@ public class TriangleTileBehaviour : MonoBehaviour
         if (upwardSprite != null)
         {
             upwardSprite.enabled = isUpward;
-            upwardSprite.gameObject.SetActive(isUpward);
+            if (!upwardSprite.gameObject.activeSelf)
+            {
+                upwardSprite.gameObject.SetActive(isUpward);
+            }
         }
         if (downwardSprite != null)
         {
             downwardSprite.enabled = !isUpward;
-            downwardSprite.gameObject.SetActive(!isUpward);
+            if (!downwardSprite.gameObject.activeSelf)
+            {
+                downwardSprite.gameObject.SetActive(!isUpward);
+            }
         }
     }
 
