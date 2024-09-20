@@ -3,9 +3,9 @@ using UnityEditor;
 using System;
 
 [InitializeOnLoad]
-public class HexGridEditor
+public class TriangleGridEditor
 {
-    static HexGridEditor()
+    static TriangleGridEditor()
     {
         SceneView.duringSceneGui += OnSceneGUI;
     }
@@ -16,7 +16,7 @@ public class HexGridEditor
         if (e.type == EventType.MouseMove && e.shift)
         {
             Vector3 mousePosition = HandleUtility.GUIPointToWorldRay(e.mousePosition).origin;
-            Vector3 snappedPosition = HexGridUtility.SnapToHexGrid(mousePosition);
+            Vector3 snappedPosition = TriangleGridUtility.SnapToTriangleGrid(mousePosition);
 
             if (Selection.activeGameObject != null)
             {
@@ -40,18 +40,18 @@ public class HexGridEditor
 
     static void DrawTriangleGrid(SceneView sceneView)
     {
-        float height = HexGridUtility.CellSize * HexGridUtility.Sqrt3 * 0.5f;
+        float height = TriangleGridUtility.CellSize * TriangleGridUtility.Sqrt3 * 0.5f;
         int gridSize = 20;
 
         Handles.color = new Color(0.5f, 0.5f, 0.5f, 0.2f);
 
         for (int y = -gridSize; y <= gridSize; y++)
         {
-            float xOffset = (y % 2 == 0) ? 0 : HexGridUtility.CellSize * 0.5f;
+            float xOffset = (y % 2 == 0) ? 0 : TriangleGridUtility.CellSize * 0.5f;
             for (int x = -gridSize; x <= gridSize; x++)
             {
-                Vector3 center = new Vector3(x * HexGridUtility.CellSize + xOffset, y * height, 0);
-                DrawTriangle(center, HexGridUtility.CellSize);
+                Vector3 center = new Vector3(x * TriangleGridUtility.CellSize + xOffset, y * height, 0);
+                DrawTriangle(center, TriangleGridUtility.CellSize);
             }
         }
     }

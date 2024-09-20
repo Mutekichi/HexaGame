@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public static class HexGridUtility
+public static class TriangleGridUtility
 {
     public static readonly float Sqrt3 = Mathf.Sqrt(3);
     public static readonly float CellSize = 2f;
@@ -27,7 +27,7 @@ public static class HexGridUtility
         return new Vector2(x_cart, y_cart);
     }
 
-    public static Vector3 SnapToHexGrid(Vector3 pos)
+    public static Vector3 SnapToTriangleGrid(Vector3 pos)
     {
         Vector2 obliqPos = ConvertCartesianToOblique(new Vector2(pos.x, pos.y));
         Vector2 normalizesObliqPos = new Vector2(obliqPos.x / CellSize, obliqPos.y / CellSize);
