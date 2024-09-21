@@ -18,11 +18,13 @@ public class TriangleGridEditor
             Vector3 mousePosition = HandleUtility.GUIPointToWorldRay(e.mousePosition).origin;
             Vector3 snappedPosition = TriangleGridUtility.GetSnappedPosOnTriangleGrid(mousePosition);
 
+            // Move the selected game object to the snapped position
             if (Selection.activeGameObject != null)
             {
                 Undo.RecordObject(Selection.activeGameObject.transform, "Move to Grid");
                 Selection.activeGameObject.transform.position = snappedPosition;
             }
+            // Draw a wire cube at the snapped position
             else
             {
                 Handles.color = Color.yellow;
