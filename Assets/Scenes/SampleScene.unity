@@ -122,6 +122,117 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1001 &348552778
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1525600992639268519, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1792833278517755530, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_Name
+      value: TriangleTile (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 4076194046275820685, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4174359481091557386, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4767397996843312988, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6640124692350623522, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6687911390277874398, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6687911390277874398, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6687911390277874398, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.1547005
+      objectReference: {fileID: 0}
+    - target: {fileID: 6687911390277874398, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.018012926
+      objectReference: {fileID: 0}
+    - target: {fileID: 6687911390277874398, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6687911390277874398, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6687911390277874398, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6687911390277874398, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6687911390277874398, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6687911390277874398, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6687911390277874398, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7230564281528964353, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: isFront
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7230564281528964353, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: isUpward
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7230564281528964353, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: upwardBackSprite
+      value: 
+      objectReference: {fileID: 348552779}
+    - target: {fileID: 7230564281528964353, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: downwardFrontSprite
+      value: 
+      objectReference: {fileID: 348552780}
+    - target: {fileID: 7776965779191829600, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+--- !u!212 &348552779 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 6640124692350623522, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+  m_PrefabInstance: {fileID: 348552778}
+  m_PrefabAsset: {fileID: 0}
+--- !u!212 &348552780 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 4076194046275820685, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+  m_PrefabInstance: {fileID: 348552778}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -570,4 +681,5 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 619394802}
   - {fileID: 1503377347}
+  - {fileID: 348552778}
   - {fileID: 1319857361}
