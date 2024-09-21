@@ -21,12 +21,16 @@ public class TriangleTileBehaviour : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        UpdateSprite();
+    }
+
     private void OnValidate()
     {
         ValidateSprites();
         UpdatePositionAndState();
     }
-
     private void ValidateSprites()
     {
         if (upwardSprite == null || downwardSprite == null)
@@ -65,24 +69,16 @@ public class TriangleTileBehaviour : MonoBehaviour
     }
 
     private void UpdateSprite()
+{
+    if (upwardSprite != null)
     {
-        if (upwardSprite != null)
-        {
-            upwardSprite.enabled = isUpward;
-            if (!upwardSprite.gameObject.activeSelf)
-            {
-                upwardSprite.gameObject.SetActive(isUpward);
-            }
-        }
-        if (downwardSprite != null)
-        {
-            downwardSprite.enabled = !isUpward;
-            if (!downwardSprite.gameObject.activeSelf)
-            {
-                downwardSprite.gameObject.SetActive(!isUpward);
-            }
-        }
+        upwardSprite.enabled = isUpward;
     }
+    if (downwardSprite != null)
+    {
+        downwardSprite.enabled = !isUpward;
+    }
+}
 
     private void OnDrawGizmos()
     {
