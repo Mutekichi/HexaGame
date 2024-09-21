@@ -23,7 +23,7 @@ public class TriangleTileBehaviour : MonoBehaviour
     
     // The default scale of the transform.x(y) of the tile
     // TO DO: Set this value to the scale of the tile in the scene
-    private static readonly float DefaultScale = 2;
+    private static readonly float DefaultScale = 1;
     // Progress of the flip animation [0, 1]
     private float flipProgress;
     private FlipState flipState = FlipState.NotFlipping;
@@ -148,5 +148,22 @@ public class TriangleTileBehaviour : MonoBehaviour
     }
 
     private void UpdateFlip() {
+        flipProgress += Time.deltaTime / flipDuration;
+        if (flipProgress >= 1) {
+            flipProgress = 1;
+            flipState = FlipState.NotFlipping;
+        }
+        else if (flipProgress >= 0.5f && flipState == FlipState.FlippingBeforeHalf) {
+            flipState = FlipState.FlippingAfterHalf;
+            isFront = !isFront;
+            UpdateSprite();
+        }
+        // flip the tile based on the progress of the flip animation
+        // X scale is flipped when the tile is flipped
+        if (flipProgress < 0.5f) {
+            transform.localScale = new Vector3(DefaultScale * (1 - flipProgress * 2), DefaultScale, 1);
+        } else {
+            transform.localScale = new Vector3(DefaultScale * (flipProgress - 0.5f) * 2, DefaultScale, 1);
+        }
     }
 }
