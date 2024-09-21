@@ -5,10 +5,13 @@ using UnityEngine;
 public class TriangleTileBehaviour : MonoBehaviour
 {
     [SerializeField] private bool isUpward = true;
-    [SerializeField] private SpriteRenderer upwardSprite;
-    [SerializeField] private SpriteRenderer downwardSprite;
+    [SerializeField] private bool isFront = true;
+    [SerializeField] private SpriteRenderer upwardFrontSprite;
+    [SerializeField] private SpriteRenderer downwardFrontSprite;
+    [SerializeField] private SpriteRenderer upwardBackSprite;
+    [SerializeField] private SpriteRenderer downwardBackSprite;
     // Duration of the flip animation [s]
-    [SerializeField] private float flipDuration = 0.5f;
+    [SerializeField] private float flipDuration = 0.3f;
 
 
     private enum FlipState
@@ -61,9 +64,9 @@ public class TriangleTileBehaviour : MonoBehaviour
     }
     private void ValidateSprites()
     {
-        if (upwardSprite == null || downwardSprite == null)
+        if (upwardFrontSprite == null || downwardFrontSprite == null || upwardBackSprite == null || downwardBackSprite == null)
         {
-            Debug.LogWarning("UpwardTriangle or DownwardTriangle SpriteRenderer not assigned!");
+            Debug.LogWarning("Sprites are not set for the tile");
         }
     }
 
@@ -111,13 +114,21 @@ public class TriangleTileBehaviour : MonoBehaviour
 
     private void UpdateSprite()
 {
-    if (upwardSprite != null)
+    if (upwardFrontSprite != null)
     {
-        upwardSprite.enabled = isUpward;
+        upwardFrontSprite.enabled = isUpward && isFront;
     }
-    if (downwardSprite != null)
+    if (downwardFrontSprite != null)
     {
-        downwardSprite.enabled = !isUpward;
+        downwardFrontSprite.enabled = !isUpward && isFront;
+    }
+    if (upwardBackSprite != null)
+    {
+        upwardBackSprite.enabled = isUpward && !isFront;
+    }
+    if (downwardBackSprite != null)
+    {
+        downwardBackSprite.enabled = !isUpward && !isFront;
     }
 }
 
@@ -137,27 +148,5 @@ public class TriangleTileBehaviour : MonoBehaviour
     }
 
     private void UpdateFlip() {
-        flipProgress += Time.deltaTime / flipDuration;
-        if (flipProgress >= 1)
-        {
-            flipProgress = 1;
-            flipState = FlipState.NotFlipping;
-        }
-        if (flipProgress >= 0.5f && flipState == FlipState.FlippingBeforeHalf)
-        {
-            flipState = FlipState.FlippingAfterHalf;
-            isUpward = !isUpward;
-            UpdateSprite();
-        }
-        if (flipState == FlipState.FlippingBeforeHalf)
-        {
-            upwardSprite.transform.localScale = new Vector3(1, 1 - flipProgress * 2, 0) * DefaultScale;
-            downwardSprite.transform.localScale = new Vector3(1, 1 - flipProgress * 2, 0) * DefaultScale;
-        }
-        else
-        {
-            upwardSprite.transform.localScale = new Vector3(1, (flipProgress - 0.5f) * 2, 0) * DefaultScale;
-            downwardSprite.transform.localScale = new Vector3(1, (flipProgress - 0.5f) * 2, 0) * DefaultScale;
-        }
     }
 }
