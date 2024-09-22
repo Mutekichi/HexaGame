@@ -4,12 +4,16 @@ using UnityEngine;
 [ExecuteAlways]
 public class TriangleTileBehaviour : MonoBehaviour
 {
+    private Camera mainCamera;
     [SerializeField] private bool isUpward = true;
     [SerializeField] private bool isFront = true;
     [SerializeField] private SpriteRenderer upwardFrontSprite;
     [SerializeField] private SpriteRenderer downwardFrontSprite;
     [SerializeField] private SpriteRenderer upwardBackSprite;
     [SerializeField] private SpriteRenderer downwardBackSprite;
+    [SerializeField] private Collider2D upwardCollider;
+    [SerializeField] private Collider2D downwardCollider;
+
     // Duration of the flip animation [s]
     [SerializeField] private float flipDuration = 0.3f;
 
@@ -27,10 +31,12 @@ public class TriangleTileBehaviour : MonoBehaviour
     // Progress of the flip animation [0, 1]
     private float flipProgress;
     private FlipState flipState = FlipState.NotFlipping;
+    private Collider2D Collider { get { return isUpward ? upwardCollider : downwardCollider; } }
 
     private void OnEnable()
     {
         UpdateSprite();
+        UpdateCollider();
     }
 
     private void Update()
@@ -55,6 +61,8 @@ public class TriangleTileBehaviour : MonoBehaviour
     private void Start()
     {
         UpdateSprite();
+        UpdateCollider();
+        mainCamera = Camera.main;
     }
 
     private void OnValidate()
@@ -62,6 +70,7 @@ public class TriangleTileBehaviour : MonoBehaviour
         ValidateSprites();
         UpdatePositionAndState();
     }
+
     private void ValidateSprites()
     {
         if (upwardFrontSprite == null || downwardFrontSprite == null || upwardBackSprite == null || downwardBackSprite == null)
@@ -72,11 +81,11 @@ public class TriangleTileBehaviour : MonoBehaviour
 
     private void CheckForClick()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            // Check if the mouse is close to the tile
-            if (Vector2.Distance(mousePos, transform.position) < 0.5f)
+        if (Input.GetMouseButtonDown(0)) {
+            Vector2 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+            RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
+
+            if (hit.collider != null && hit.collider.gameObject == Collider.gameObject)
             {
                 StartFlip();
             }
@@ -113,24 +122,36 @@ public class TriangleTileBehaviour : MonoBehaviour
     }
 
     private void UpdateSprite()
-{
-    if (upwardFrontSprite != null)
     {
-        upwardFrontSprite.enabled = isUpward && isFront;
+        if (upwardFrontSprite != null)
+        {
+            upwardFrontSprite.enabled = isUpward && isFront;
+        }
+        if (downwardFrontSprite != null)
+        {
+            downwardFrontSprite.enabled = !isUpward && isFront;
+        }
+        if (upwardBackSprite != null)
+        {
+            upwardBackSprite.enabled = isUpward && !isFront;
+        }
+        if (downwardBackSprite != null)
+        {
+            downwardBackSprite.enabled = !isUpward && !isFront;
+        }
     }
-    if (downwardFrontSprite != null)
+
+    private void UpdateCollider()
     {
-        downwardFrontSprite.enabled = !isUpward && isFront;
+        if (upwardCollider != null)
+        {
+            upwardCollider.enabled = isUpward;
+        }
+        if (downwardCollider != null)
+        {
+            downwardCollider.enabled = !isUpward;
+        }
     }
-    if (upwardBackSprite != null)
-    {
-        upwardBackSprite.enabled = isUpward && !isFront;
-    }
-    if (downwardBackSprite != null)
-    {
-        downwardBackSprite.enabled = !isUpward && !isFront;
-    }
-}
 
     private void OnDrawGizmos()
     {
