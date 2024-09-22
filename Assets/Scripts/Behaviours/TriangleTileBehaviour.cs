@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -32,6 +33,7 @@ public class TriangleTileBehaviour : MonoBehaviour
     private float flipProgress;
     private FlipState flipState = FlipState.NotFlipping;
     private Collider2D Collider { get { return isUpward ? upwardCollider : downwardCollider; } }
+    private BoardManager boardManager;
 
     private void OnEnable()
     {
@@ -62,6 +64,7 @@ public class TriangleTileBehaviour : MonoBehaviour
     {
         UpdateSprite();
         UpdateCollider();
+        boardManager = FindObjectOfType<BoardManager>();
         mainCamera = Camera.main;
     }
 
@@ -87,7 +90,15 @@ public class TriangleTileBehaviour : MonoBehaviour
 
             if (hit.collider != null && hit.collider.gameObject == Collider.gameObject)
             {
-                StartFlip();
+                List<GameObject> neighbors = boardManager.GetNeighborsFromTilePosition(transform.position);
+                foreach (GameObject neighbor in neighbors)
+                {
+                    TriangleTileBehaviour neighborTile = neighbor.GetComponent<TriangleTileBehaviour>();
+                    if (neighborTile != null)
+                    {
+                        neighborTile.StartFlip();
+                    }
+                }
             }
         }
     }
