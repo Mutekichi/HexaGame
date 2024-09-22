@@ -32,7 +32,7 @@ public class TriangleTileBehaviour : MonoBehaviour
     // Progress of the flip animation [0, 1]
     private float flipProgress;
     private FlipState flipState = FlipState.NotFlipping;
-    private Collider2D Collider { get { return isUpward ? upwardCollider : downwardCollider; } }
+    private Collider2D tileCollider { get { return isUpward ? upwardCollider : downwardCollider; } }
     private BoardManager boardManager;
 
     private void OnEnable()
@@ -86,21 +86,20 @@ public class TriangleTileBehaviour : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0)) {
             Vector2 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-            RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
 
-            if (hit.collider != null && hit.collider.gameObject == Collider.gameObject)
+            if (IsClickedOnTile(mousePosition))
             {
-                List<GameObject> neighbors = boardManager.GetNeighborsFromTilePosition(transform.position);
-                foreach (GameObject neighbor in neighbors)
+                if (CheckAllNeighborsBeforeFlip())
                 {
-                    TriangleTileBehaviour neighborTile = neighbor.GetComponent<TriangleTileBehaviour>();
-                    if (neighborTile != null)
-                    {
-                        neighborTile.StartFlip();
-                    }
+                    FlipNeighbors();
                 }
             }
         }
+    }
+    private bool IsClickedOnTile(Vector2 mousePosition)
+    {
+        RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
+        return hit.collider != null && hit.collider.gameObject == tileCollider.gameObject;
     }
 
     private void UpdatePositionAndState()
@@ -197,5 +196,32 @@ public class TriangleTileBehaviour : MonoBehaviour
         } else {
             transform.localScale = new Vector3(DefaultScale * (flipProgress - 0.5f) * 2, DefaultScale, 1);
         }
+    }
+
+    private void FlipNeighbors()
+    {
+        List<GameObject> neighbors = boardManager.GetNeighborsFromTilePosition(transform.position);
+        foreach (GameObject neighbor in neighbors)
+        {
+            TriangleTileBehaviour neighborTile = neighbor.GetComponent<TriangleTileBehaviour>();
+            if (neighborTile != null)
+            {
+                neighborTile.StartFlip();
+            }
+        }
+    }
+
+    private bool CheckAllNeighborsBeforeFlip()
+    {
+        List<GameObject> neighbors = boardManager.GetNeighborsFromTilePosition(transform.position);
+        foreach (GameObject neighbor in neighbors)
+        {
+            TriangleTileBehaviour neighborTile = neighbor.GetComponent<TriangleTileBehaviour>();
+            if (neighborTile != null && neighborTile.flipState != FlipState.NotFlipping)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }
