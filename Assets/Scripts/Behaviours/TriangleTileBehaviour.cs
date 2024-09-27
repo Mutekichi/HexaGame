@@ -20,7 +20,21 @@ public class TriangleTileBehaviour : MonoBehaviour
             }
         }
     }
-    [SerializeField] private bool isFront = true;
+
+    [SerializeField] private bool _isFront = true;
+    public bool isFront
+    {
+        get { return _isFront; }
+        set
+        {
+            if (_isFront != value)
+            {
+                _isFront = value;
+                UpdateSprite();
+            }
+        }
+    }
+
     [SerializeField] private SpriteRenderer upwardFrontSprite;
     [SerializeField] private SpriteRenderer downwardFrontSprite;
     [SerializeField] private SpriteRenderer upwardBackSprite;
@@ -28,7 +42,6 @@ public class TriangleTileBehaviour : MonoBehaviour
     [SerializeField] private Collider2D upwardCollider;
     [SerializeField] private Collider2D downwardCollider;
 
-    // Duration of the flip animation [s]
     [SerializeField] private float flipDuration = 0.3f;
 
     private enum FlipState
@@ -38,10 +51,7 @@ public class TriangleTileBehaviour : MonoBehaviour
         FlippingAfterHalf
     }
     
-    // The default scale of the transform.x(y) of the tile
-    // TO DO: Set this value to the scale of the tile in the scene
     private static readonly float DefaultScale = 1;
-    // Progress of the flip animation [0, 1]
     private float flipProgress;
     private FlipState flipState = FlipState.NotFlipping;
     private Collider2D tileCollider { get { return isUpward ? upwardCollider : downwardCollider; } }
@@ -191,10 +201,7 @@ public class TriangleTileBehaviour : MonoBehaviour
         else if (flipProgress >= 0.5f && flipState == FlipState.FlippingBeforeHalf) {
             flipState = FlipState.FlippingAfterHalf;
             isFront = !isFront;
-            UpdateSprite();
         }
-        // flip the tile based on the progress of the flip animation
-        // X scale is flipped when the tile is flipped
         if (flipProgress < 0.5f) {
             transform.localScale = new Vector3(DefaultScale * (1 - flipProgress * 2), DefaultScale, 1);
         } else {
