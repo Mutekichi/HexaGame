@@ -6,7 +6,20 @@ using UnityEngine;
 public class TriangleTileBehaviour : MonoBehaviour
 {
     private Camera mainCamera;
-    [SerializeField] private bool isUpward = true;
+    [SerializeField] private bool _isUpward = true;
+    public bool isUpward
+    {
+        get { return _isUpward; }
+        set
+        {
+            if (_isUpward != value)
+            {
+                _isUpward = value;
+                UpdateSprite();
+                UpdateCollider();
+            }
+        }
+    }
     [SerializeField] private bool isFront = true;
     [SerializeField] private SpriteRenderer upwardFrontSprite;
     [SerializeField] private SpriteRenderer downwardFrontSprite;
@@ -17,7 +30,6 @@ public class TriangleTileBehaviour : MonoBehaviour
 
     // Duration of the flip animation [s]
     [SerializeField] private float flipDuration = 0.3f;
-
 
     private enum FlipState
     {
@@ -96,6 +108,7 @@ public class TriangleTileBehaviour : MonoBehaviour
             }
         }
     }
+
     private bool IsClickedOnTile(Vector2 mousePosition)
     {
         RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
@@ -112,22 +125,13 @@ public class TriangleTileBehaviour : MonoBehaviour
         switch (state)
         {
             case TriangleGridUtility.GridPositionState.OnUpwardCenter:
-                SetUpward(true);
+                isUpward = true;
                 break;
             case TriangleGridUtility.GridPositionState.OnDownwardCenter:
-                SetUpward(false);
+                isUpward = false;
                 break;
             case TriangleGridUtility.GridPositionState.OnVertex:
                 break;
-        }
-    }
-
-    private void SetUpward(bool upward)
-    {
-        if (isUpward != upward)
-        {
-            isUpward = upward;
-            UpdateSprite();
         }
     }
 
