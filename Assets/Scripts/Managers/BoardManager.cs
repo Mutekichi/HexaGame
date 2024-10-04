@@ -1,8 +1,12 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class BoardManager : MonoBehaviour
 {
+    public static readonly float CellSize = 2f;
+    public static readonly float distanceBetweenTileCenters = CellSize / Mathf.Sqrt(3);
+    [SerializeField] private GameObject spritePrefab;
     [System.Serializable]
     public struct TileNode
     {
@@ -20,6 +24,66 @@ public class BoardManager : MonoBehaviour
         }
     }
 
+    private enum EdgeDirectionBetweenTiles
+    {
+        Up,
+        UpRight,
+        DownRight,
+        Down,
+        DownLeft,
+        UpLeft
+
+    }
+    private EdgeDirectionBetweenTiles getOppositeDirection(EdgeDirectionBetweenTiles direction)
+    {
+        switch (direction)
+        {
+            case EdgeDirectionBetweenTiles.Up:
+                return EdgeDirectionBetweenTiles.Down;
+            case EdgeDirectionBetweenTiles.UpRight:
+                return EdgeDirectionBetweenTiles.DownLeft;
+            case EdgeDirectionBetweenTiles.DownRight:
+                return EdgeDirectionBetweenTiles.UpLeft;
+            case EdgeDirectionBetweenTiles.Down:
+                return EdgeDirectionBetweenTiles.Up;
+            case EdgeDirectionBetweenTiles.DownLeft:
+                return EdgeDirectionBetweenTiles.UpRight;
+            case EdgeDirectionBetweenTiles.UpLeft:
+                return EdgeDirectionBetweenTiles.DownRight;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
+        }
+    }
+    private Dictionary<bool, List<EdgeDirectionBetweenTiles>> tileFacingUpToDirections = new Dictionary<bool, List<EdgeDirectionBetweenTiles>>
+    {
+        {true, new List<EdgeDirectionBetweenTiles> { EdgeDirectionBetweenTiles.Down, EdgeDirectionBetweenTiles.UpRight, EdgeDirectionBetweenTiles.UpLeft }},
+        {false, new List<EdgeDirectionBetweenTiles> { EdgeDirectionBetweenTiles.Up, EdgeDirectionBetweenTiles.DownRight, EdgeDirectionBetweenTiles.DownLeft }}
+    };
+    private Dictionary<EdgeDirectionBetweenTiles, Vector3> unitEdgeDirectionToVector = new Dictionary<EdgeDirectionBetweenTiles, Vector3>
+    {
+        {EdgeDirectionBetweenTiles.Up, new Vector3(0, 1, 0)},
+        {EdgeDirectionBetweenTiles.UpRight, new Vector3(Mathf.Sqrt(3) / 2, 0.5f, 0)},
+        {EdgeDirectionBetweenTiles.DownRight, new Vector3(Mathf.Sqrt(3) / 2, -0.5f, 0)},
+        {EdgeDirectionBetweenTiles.Down, new Vector3(0, -1, 0)},
+        {EdgeDirectionBetweenTiles.DownLeft, new Vector3(-Mathf.Sqrt(3) / 2, -0.5f, 0)},
+        {EdgeDirectionBetweenTiles.UpLeft, new Vector3(-Mathf.Sqrt(3) / 2, 0.5f, 0)}
+    };
+    private Dictionary<EdgeDirectionBetweenTiles, float> edgeDirectionToAngle = new Dictionary<EdgeDirectionBetweenTiles, float>
+    {
+        {EdgeDirectionBetweenTiles.Up, 90},
+        {EdgeDirectionBetweenTiles.UpRight, 30},
+        {EdgeDirectionBetweenTiles.DownRight, -30},
+        {EdgeDirectionBetweenTiles.Down, -90},
+        {EdgeDirectionBetweenTiles.DownLeft, -150},
+        {EdgeDirectionBetweenTiles.UpLeft, 150}
+    };
+    private struct QueueElementForPlacingBorder
+    {
+        public int tileIndex;
+        public bool isUpward;
+        public List<EdgeDirectionBetweenTiles> directionsToVisit;
+    }
+
     [SerializeField] private List<TileNode> tileList = new List<TileNode>();
     [SerializeField] private float neighborDistanceThreshold = 2f / Mathf.Sqrt(3) + 0.01f;
 
@@ -28,8 +92,59 @@ public class BoardManager : MonoBehaviour
         GenerateBoard();
     }
 
+    [ContextMenu("Generate Frame")]
+    private void GenerateFrame()
+    {
+        GenerateBoard();
+
+        ClearBorders();
+
+        for (int i = 0; i < tileList.Count; ++i) {
+            bool isUpward = IsTileFacingUp(i);
+            List<EdgeDirectionBetweenTiles> directionsToVisit = tileFacingUpToDirections[isUpward];
+
+            Vector3 center = GetTilePosition(i);
+            foreach (EdgeDirectionBetweenTiles direction in directionsToVisit)
+            {
+                Vector3 edgeCenter = center + unitEdgeDirectionToVector[direction] * distanceBetweenTileCenters;
+                if (GetTileIndex(edgeCenter) == -1)
+                {
+                    PlaceBorderSprite(center + unitEdgeDirectionToVector[direction] * distanceBetweenTileCenters / 2, edgeDirectionToAngle[direction]);
+                }
+                else
+                {
+                    PlaceBoarderPaleSprite(center + unitEdgeDirectionToVector[direction] * distanceBetweenTileCenters / 2, edgeDirectionToAngle[direction]);
+                }
+            }
+        }
+    }
+    private void PlaceBorderSprite(Vector3 center, float angle)
+    {
+        GameObject sprite = Instantiate(spritePrefab, center, Quaternion.identity);
+        sprite.transform.Rotate(Vector3.forward, angle);
+    }
+
+    private void PlaceBoarderPaleSprite(Vector3 center, float angle, float alpha = 0.4f)
+    {
+        GameObject sprite = Instantiate(spritePrefab, center, Quaternion.identity);
+        sprite.transform.Rotate(Vector3.forward, angle);
+        Color color = sprite.GetComponent<SpriteRenderer>().color;
+        color.a = alpha;
+        sprite.GetComponent<SpriteRenderer>().color = color;
+        
+    }
+    
+    private void ClearBorders()
+    {
+        GameObject[] sprites = GameObject.FindGameObjectsWithTag("Border");
+        foreach (GameObject sprite in sprites)
+        {
+            Destroy(sprite);
+        }
+    }
     private void GenerateBoard()
     {
+        tileList.Clear();
         GameObject[] tiles = GameObject.FindGameObjectsWithTag("Tile");
         Debug.Log($"Tiles found: {tiles.Length}");
 
@@ -67,6 +182,11 @@ public class BoardManager : MonoBehaviour
             }
         }
         return -1;
+    }
+
+    public bool IsTileFacingUp(int tileIndex)
+    {
+        return tileList[tileIndex].tileObject.GetComponent<TriangleTileBehaviour>().isUpward;
     }
 
     public List<GameObject> GetNeighborsFromTilePosition(Vector3 pos)
