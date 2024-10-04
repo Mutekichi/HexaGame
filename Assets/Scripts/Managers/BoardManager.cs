@@ -139,7 +139,8 @@ public class BoardManager : MonoBehaviour
         GameObject[] sprites = GameObject.FindGameObjectsWithTag("Border");
         foreach (GameObject sprite in sprites)
         {
-            Destroy(sprite);
+            // editor only
+            DestroyImmediate(sprite);
         }
     }
     private void GenerateBoard()
