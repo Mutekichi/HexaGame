@@ -147,7 +147,6 @@ public class BoardManager : MonoBehaviour
     {
         tileList.Clear();
         GameObject[] tiles = GameObject.FindGameObjectsWithTag("Tile");
-        Debug.Log($"Tiles found: {tiles.Length}");
 
         for (int i = 0; i < tiles.Length; i++)
         {
