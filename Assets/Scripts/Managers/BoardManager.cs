@@ -6,7 +6,7 @@ public class BoardManager : MonoBehaviour
 {
     public static readonly float CellSize = 2f;
     public static readonly float distanceBetweenTileCenters = CellSize / Mathf.Sqrt(3);
-    [SerializeField] private GameObject spritePrefab;
+    [SerializeField] private GameObject frameSpritePrefab;
     [System.Serializable]
     public struct TileNode
     {
@@ -91,49 +91,40 @@ public class BoardManager : MonoBehaviour
     {
         GenerateBoard();
     }
-
     [ContextMenu("Generate Frame")]
     private void GenerateFrame()
     {
         GenerateBoard();
-
         ClearBorders();
 
-        for (int i = 0; i < tileList.Count; ++i) {
-            bool isUpward = IsTileFacingUp(i);
-            List<EdgeDirectionBetweenTiles> directionsToVisit = tileFacingUpToDirections[isUpward];
-
+        for (int i = 0; i < tileList.Count; ++i)
+        {
             Vector3 center = GetTilePosition(i);
-            foreach (EdgeDirectionBetweenTiles direction in directionsToVisit)
+            bool isUpward = IsTileFacingUp(i);
+            foreach (EdgeDirectionBetweenTiles direction in tileFacingUpToDirections[isUpward])
             {
                 Vector3 edgeCenter = center + unitEdgeDirectionToVector[direction] * distanceBetweenTileCenters;
-                if (GetTileIndex(edgeCenter) == -1)
-                {
-                    PlaceBorderSprite(center + unitEdgeDirectionToVector[direction] * distanceBetweenTileCenters / 2, edgeDirectionToAngle[direction]);
-                }
-                else
-                {
-                    PlaceBoarderPaleSprite(center + unitEdgeDirectionToVector[direction] * distanceBetweenTileCenters / 2, edgeDirectionToAngle[direction]);
-                }
+                bool isOuterEdge = GetTileIndex(edgeCenter) == -1;
+                PlaceBorderSprite(
+                    center + unitEdgeDirectionToVector[direction] * distanceBetweenTileCenters / 2, 
+                    edgeDirectionToAngle[direction],
+                    isOuterEdge ? 1f : 0.4f
+                );
             }
         }
     }
-    private void PlaceBorderSprite(Vector3 center, float angle)
-    {
-        GameObject sprite = Instantiate(spritePrefab, center, Quaternion.identity);
-        sprite.transform.Rotate(Vector3.forward, angle);
-    }
 
-    private void PlaceBoarderPaleSprite(Vector3 center, float angle, float alpha = 0.4f)
+    private void PlaceBorderSprite(Vector3 center, float angle, float alpha = 1f)
     {
-        GameObject sprite = Instantiate(spritePrefab, center, Quaternion.identity);
+        Transform framesParent = GameObject.Find("Frames")?.transform ?? new GameObject("Frames").transform;
+        GameObject sprite = Instantiate(frameSpritePrefab, center, Quaternion.identity, framesParent);
         sprite.transform.Rotate(Vector3.forward, angle);
-        Color color = sprite.GetComponent<SpriteRenderer>().color;
+
+        SpriteRenderer spriteRenderer = sprite.GetComponent<SpriteRenderer>();
+        Color color = spriteRenderer.color;
         color.a = alpha;
-        sprite.GetComponent<SpriteRenderer>().color = color;
-        
+        spriteRenderer.color = color;
     }
-    
     private void ClearBorders()
     {
         GameObject[] sprites = GameObject.FindGameObjectsWithTag("Border");
