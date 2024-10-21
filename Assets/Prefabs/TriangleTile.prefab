@@ -137,8 +137,8 @@ MonoBehaviour:
   _isUpward: 0
   _isFront: 1
   upwardFrontSprite: {fileID: 4174359481091557386}
-  downwardFrontSprite: {fileID: 0}
-  upwardBackSprite: {fileID: 0}
+  downwardFrontSprite: {fileID: 4076194046275820685}
+  upwardBackSprite: {fileID: 6640124692350623522}
   downwardBackSprite: {fileID: 4767397996843312988}
   upwardCollider: {fileID: 8447607195695258998}
   downwardCollider: {fileID: 8675664766069723354}
