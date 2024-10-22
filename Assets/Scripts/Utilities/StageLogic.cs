@@ -1,9 +1,35 @@
-using System.Collections;
-using Unity.VisualScripting;
+using System;
 using UnityEngine;
 
-public class StageLogic : MonoBehaviour
+public class StageLogic
 {
+    public static void Test()
+    {
+        string[] stringExpression = new string[] {
+            "0121210",
+            "2121212",
+            "1212121",
+            "0212120",
+        };
+
+        int sampleHeight = 4;
+        int sampleWidth = 7;
+
+        CellState[,] cellStateStrings = GetCellStateStringsFromStringExpression(stringExpression, sampleHeight, sampleWidth);
+        CellExpression sampleCellExpression = new(sampleHeight, sampleWidth, true, cellStateStrings);
+
+        Board sampleBoard = CellExpression.GenerateBoard(sampleCellExpression);
+
+        Debug.Log("Board size: " + sampleBoard.size);
+        // as bitstring
+        Debug.Log("Board state: " + Convert.ToString(sampleBoard.boardState, 2));
+        Debug.Log("Board connectivity: ");
+        for (int i = 0; i < sampleBoard.size; ++i) {
+            Debug.Log("Tile " + i + " neighbors: " + sampleBoard.tiles[i].neighbors[0] + " " + sampleBoard.tiles[i].neighbors[1] + " " + sampleBoard.tiles[i].neighbors[2]);
+        }
+    }
+
+
     public struct Stage 
     {
         Board initialBoard;
@@ -47,7 +73,7 @@ public class StageLogic : MonoBehaviour
             this.cells = cells;
         }
         
-        private static Board GenerateBoard(CellExpression cellExpression)
+        public static Board GenerateBoard(CellExpression cellExpression)
         {
             int height = cellExpression.height;
             int width = cellExpression.width;
@@ -72,7 +98,7 @@ public class StageLogic : MonoBehaviour
                         tiles[cnt].isFront = cells[ih, iw] == CellState.Front;
                         tiles[cnt].isUpward = isTopLeftTriangleDownward ? (ih + iw) % 2 == 0 : (ih + iw) % 2 == 1;
                         if (tiles[cnt].isFront) {
-                            boardState |= 1 << cnt;
+                            boardState += 1 << cnt;
                         }
                         tileIndices[ih, iw] = cnt++;
                     }
@@ -81,36 +107,41 @@ public class StageLogic : MonoBehaviour
 
             for (int ih = 0; ih < height; ++ih) {
                 for (int iw = 0; iw < width; ++iw) {
+
                     if (tileIndices[ih, iw] == -1) {
                         continue;
                     }
-                    if (iw != width - 1) {
-                        if (tileIndices[ih, iw + 1] != -1) {
-                            tiles[tileIndices[ih, iw]].neighbors[0] = tileIndices[ih, iw + 1];
-                        }
+                    tiles[tileIndices[ih, iw]].neighbors = new int[3];
+                    if (iw != width - 1 && tileIndices[ih, iw + 1] != -1) {
+                        tiles[tileIndices[ih, iw]].neighbors[0] = tileIndices[ih, iw + 1];
+                    } else {
+                        tiles[tileIndices[ih, iw]].neighbors[0] = -1;
                     }
-                    if (iw != 0) {
-                        if (tileIndices[ih, iw - 1] != -1) {
-                            tiles[tileIndices[ih, iw]].neighbors[1] = tileIndices[ih, iw - 1];
-                        }
+                    if (iw != 0 && tileIndices[ih, iw - 1] != -1) {
+                        tiles[tileIndices[ih, iw]].neighbors[1] = tileIndices[ih, iw - 1];
+                    } else {
+                        tiles[tileIndices[ih, iw]].neighbors[1] = -1;
                     }
                     if (ih != 0 && IsDownwardTile(ih, iw, isTopLeftTriangleDownward)) {
                         if (tileIndices[ih - 1, iw] != -1) {
                             tiles[tileIndices[ih, iw]].neighbors[2] = tileIndices[ih - 1, iw];
+                            continue;
                         }
                     }
                     if (ih != height - 1 && !IsDownwardTile(ih, iw, isTopLeftTriangleDownward)) {
                         if (tileIndices[ih + 1, iw] != -1) {
                             tiles[tileIndices[ih, iw]].neighbors[2] = tileIndices[ih + 1, iw];
+                            continue;
                         }
                     }
+                    tiles[tileIndices[ih, iw]].neighbors[2] = -1;
                 }
             }
 
             return new Board() {
                 size = size,
                 tiles = tiles,
-                boardState = 0
+                boardState = boardState
             };
         }
         
@@ -130,6 +161,29 @@ public class StageLogic : MonoBehaviour
         }
     }
 
+    public static CellState[,] GetCellStateStringsFromStringExpression(string[] stringExpression, int height, int width)
+    {
+        // '0' for empty, '1' for front, '2' for back
+        CellState[,] cellExpression = new CellState[height, width];
+        for (int i = 0; i < height; ++i) {
+            for (int j = 0; j < width; ++j) {
+                switch (stringExpression[i][j]) {
+                    case '0':
+                        cellExpression[i, j] = CellState.Empty;
+                        break;
+                    case '1':
+                        cellExpression[i, j] = CellState.Front;
+                        break;
+                    case '2':
+                        cellExpression[i, j] = CellState.Back;
+                        break;
+                    default:
+                        throw new ArgumentException("Invalid character in the string expression.");
+                }
+            }
+        }
+        return cellExpression;
+    }
     private static bool IsDownwardTile(int ih, int iw, bool isTopLeftTriangleDownward)
     {
         return isTopLeftTriangleDownward ? (ih + iw) % 2 == 0 : (ih + iw) % 2 == 1;
