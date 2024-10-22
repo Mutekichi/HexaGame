@@ -93,7 +93,7 @@ public class TriangleTileBehaviour : MonoBehaviour
     private void OnValidate()
     {
         ValidateSprites();
-        UpdatePositionAndState();
+        // UpdatePositionAndState();
     }
 
     private void ValidateSprites()

@@ -116,8 +116,10 @@ public class BoardManager : MonoBehaviour
 
     private void PlaceBorderSprite(Vector3 center, float angle, float alpha = 1f)
     {
+        Debug.Log("Placing border sprite at " + center);
         Transform framesParent = GameObject.Find("Frames")?.transform ?? new GameObject("Frames").transform;
         GameObject sprite = Instantiate(frameSpritePrefab, center, Quaternion.identity, framesParent);
+        Debug.Log(sprite == null ? "Sprite is null" : "Sprite is not null");
         sprite.transform.Rotate(Vector3.forward, angle);
 
         SpriteRenderer spriteRenderer = sprite.GetComponent<SpriteRenderer>();
