@@ -67,7 +67,7 @@ public class TriangleTileBehaviour : MonoBehaviour
     {
         if (!Application.isPlaying)
         {
-            UpdatePositionAndState();
+            // UpdatePositionAndState();
         }
         else
         {

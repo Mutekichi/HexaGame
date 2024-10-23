@@ -3,7 +3,7 @@ using System.Collections;
 using System.Linq;
 using UnityEngine;
 
-public class StageLogic: MonoBehaviour
+public class StageLogic
 {
     void Start()
     {
@@ -233,7 +233,7 @@ public class StageLogic: MonoBehaviour
             "0212120",
             "1212121",
             "2121212",
-            "0000010"
+            "0000020"
         };
 
         int sampleHeight = 4;

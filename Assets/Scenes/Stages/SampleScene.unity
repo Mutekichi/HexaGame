@@ -169,6 +169,8 @@ MonoBehaviour:
   stageNumber: 1
   AnswerBoardPrefab: {fileID: 1713988693750373274, guid: 174fd96dc7a273e4d87bf474c64ab433, type: 3}
   PlayerBoardPrefab: {fileID: 1713988693750373274, guid: 174fd96dc7a273e4d87bf474c64ab433, type: 3}
+  TriangleTilePrefab: {fileID: 1792833278517755530, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+  PlayerBoardInstance: {fileID: 1280167022}
 --- !u!4 &124044556 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 513797878765348614, guid: 23770e9fc61edbb4ca7fed8c253025a3, type: 3}
@@ -255,7 +257,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.9716981, g: 0.9716981, b: 0.9716981, a: 0}
+  m_BackGroundColor: {r: 0.60084647, g: 0.7798742, b: 0.6347428, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -427,61 +429,17 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1280167022}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 90.12431}
-  m_LocalScale: {x: 0.042156428, y: 0.042156428, z: 0.042156428}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2121772266064433892}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 6.3505898, y: -4182.258}
+  m_AnchoredPosition: {x: 6.67, y: -3.8}
   m_SizeDelta: {x: 300, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &1863984359
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1863984361}
-  - component: {fileID: 1863984360}
-  m_Layer: 0
-  m_Name: ScriptTest
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1863984360
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1863984359}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6bf06fe0e3472de4d9152610d9210ae9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!4 &1863984361
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1863984359}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -9.757773, y: 0.94247, z: 109.01287}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1879556374 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 513797878765348614, guid: 23770e9fc61edbb4ca7fed8c253025a3, type: 3}
@@ -524,7 +482,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 8.605957, y: 7.327118}
+  m_AnchoredPosition: {x: 7.8, y: 6.43}
   m_SizeDelta: {x: 150, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &120089299473048132
@@ -1465,6 +1423,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2776267772367863802}
     m_Modifications:
+    - target: {fileID: 3657790822971393895, guid: c9c9061fbbbcb384e8f41920630af55d, type: 3}
+      propertyPath: m_SortingOrder
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 7589456296122424577, guid: c9c9061fbbbcb384e8f41920630af55d, type: 3}
       propertyPath: m_Enabled
       value: 1
@@ -1523,7 +1485,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8430124345291737251, guid: c9c9061fbbbcb384e8f41920630af55d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2134.9058
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 8430124345291737251, guid: c9c9061fbbbcb384e8f41920630af55d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1875,4 +1837,3 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 619394802}
   - {fileID: 2121772266064433892}
-  - {fileID: 1863984361}
