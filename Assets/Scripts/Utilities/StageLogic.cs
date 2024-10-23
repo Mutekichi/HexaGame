@@ -9,7 +9,7 @@ public class StageLogic
     {
         Test();
     }
-    public struct Stage 
+    public struct Stage
     {
         public Board initialBoard;
         public Board currentBoard;
@@ -25,7 +25,7 @@ public class StageLogic
         public int[] neighbors;
     }
 
-    public struct Board 
+    public struct Board
     {
         public int size;
         public Tile[] tiles;
@@ -53,7 +53,7 @@ public class StageLogic
             this.isTopLeftTriangleDownward = isTopLeftTriangleDownward;
             this.cells = cells;
         }
-        
+
         public static Board GenerateBoard(CellExpression cellExpression)
         {
             int height = cellExpression.height;
@@ -85,7 +85,7 @@ public class StageLogic
                             isUpward = isTopLeftTriangleDownward ? (ih + iw) % 2 == 0 : (ih + iw) % 2 == 1,
                             neighbors = new int[3] { -1, -1, -1 }
                         };
-                        
+
                         boardState[cnt] = tiles[cnt].isFront;
                         tileIndices[ih, iw] = cnt++;
                     }
@@ -159,7 +159,7 @@ public class StageLogic
         public static string GetFormattedBoardState(Board board, int groupSize = 4)
         {
             string binary = GetBoardStateString(board);
-            return string.Join("_", 
+            return string.Join("_",
                 binary.Reverse()
                     .Select((c, i) => new { c, i })
                     .GroupBy(x => x.i / groupSize)
@@ -174,7 +174,7 @@ public class StageLogic
             sb.AppendLine($"Board State: {GetBoardStateString(board)}");
             sb.AppendLine($"Formatted State: {GetFormattedBoardState(board)}");
             sb.AppendLine("\nTiles:");
-            
+
             for (int i = 0; i < board.size; i++)
             {
                 Tile tile = board.tiles[i];
@@ -186,7 +186,7 @@ public class StageLogic
                 sb.AppendLine($"    Left: {FormatNeighbor(tile.neighbors[1])}");
                 sb.AppendLine($"    {(tile.isUpward ? "Bottom" : "Top")}: {FormatNeighbor(tile.neighbors[2])}");
             }
-            
+
             return sb.ToString();
         }
 
@@ -196,6 +196,10 @@ public class StageLogic
         }
     }
 
+    public static bool IsDownwardTileFromIndex(int ih, int iw, bool isTopLeftTriangleDownward)
+    {
+        return isTopLeftTriangleDownward ? (ih + iw) % 2 == 0 : (ih + iw) % 2 == 1;
+    }
     public static CellState[,] GetCellStateStringsFromStringExpression(string[] stringExpression, int height, int width)
     {
         CellState[,] cellExpression = new CellState[height, width];
@@ -225,6 +229,11 @@ public class StageLogic
     private static bool IsDownwardTile(int ih, int iw, bool isTopLeftTriangleDownward)
     {
         return isTopLeftTriangleDownward ? (ih + iw) % 2 == 0 : (ih + iw) % 2 == 1;
+    }
+
+    public static (float width, float height) GetBoardSizeFromCellExpression(CellExpression cellExpression)
+    {
+        return (cellExpression.width * 0.5f + 0.5f, cellExpression.height * Mathf.Sqrt(3) / 2f);
     }
 
     public static void Test()

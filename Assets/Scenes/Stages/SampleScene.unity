@@ -167,8 +167,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stageNumber: 1
-  AnswerBoardPrefab: {fileID: 1713988693750373274, guid: 174fd96dc7a273e4d87bf474c64ab433, type: 3}
-  PlayerBoardPrefab: {fileID: 1713988693750373274, guid: 174fd96dc7a273e4d87bf474c64ab433, type: 3}
   TriangleTilePrefab: {fileID: 1792833278517755530, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
   PlayerBoardInstance: {fileID: 1280167022}
 --- !u!4 &124044556 stripped
@@ -282,7 +280,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 11.487627
+  orthographic size: 11.632398
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -437,7 +435,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 6.67, y: -3.8}
+  m_AnchoredPosition: {x: 6.32, y: -3.25}
   m_SizeDelta: {x: 300, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!4 &1879556374 stripped

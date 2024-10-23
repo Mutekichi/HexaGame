@@ -36,23 +36,16 @@ public class BoardManager : MonoBehaviour
     }
     private EdgeDirectionBetweenTiles getOppositeDirection(EdgeDirectionBetweenTiles direction)
     {
-        switch (direction)
+        return direction switch
         {
-            case EdgeDirectionBetweenTiles.Up:
-                return EdgeDirectionBetweenTiles.Down;
-            case EdgeDirectionBetweenTiles.UpRight:
-                return EdgeDirectionBetweenTiles.DownLeft;
-            case EdgeDirectionBetweenTiles.DownRight:
-                return EdgeDirectionBetweenTiles.UpLeft;
-            case EdgeDirectionBetweenTiles.Down:
-                return EdgeDirectionBetweenTiles.Up;
-            case EdgeDirectionBetweenTiles.DownLeft:
-                return EdgeDirectionBetweenTiles.UpRight;
-            case EdgeDirectionBetweenTiles.UpLeft:
-                return EdgeDirectionBetweenTiles.DownRight;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
-        }
+            EdgeDirectionBetweenTiles.Up => EdgeDirectionBetweenTiles.Down,
+            EdgeDirectionBetweenTiles.UpRight => EdgeDirectionBetweenTiles.DownLeft,
+            EdgeDirectionBetweenTiles.DownRight => EdgeDirectionBetweenTiles.UpLeft,
+            EdgeDirectionBetweenTiles.Down => EdgeDirectionBetweenTiles.Up,
+            EdgeDirectionBetweenTiles.DownLeft => EdgeDirectionBetweenTiles.UpRight,
+            EdgeDirectionBetweenTiles.UpLeft => EdgeDirectionBetweenTiles.DownRight,
+            _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null),
+        };
     }
     private Dictionary<bool, List<EdgeDirectionBetweenTiles>> tileFacingUpToDirections = new Dictionary<bool, List<EdgeDirectionBetweenTiles>>
     {
@@ -106,7 +99,7 @@ public class BoardManager : MonoBehaviour
                 Vector3 edgeCenter = center + unitEdgeDirectionToVector[direction] * distanceBetweenTileCenters;
                 bool isOuterEdge = GetTileIndex(edgeCenter) == -1;
                 PlaceBorderSprite(
-                    center + unitEdgeDirectionToVector[direction] * distanceBetweenTileCenters / 2, 
+                    center + unitEdgeDirectionToVector[direction] * distanceBetweenTileCenters / 2,
                     edgeDirectionToAngle[direction],
                     isOuterEdge ? 1f : 0.4f
                 );

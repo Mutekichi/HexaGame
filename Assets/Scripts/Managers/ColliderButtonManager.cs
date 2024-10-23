@@ -10,7 +10,7 @@ public class ColliderButtonManager : MonoBehaviour
     {
         // アタッチされているPolygonCollider2Dを取得
         polygonCollider = GetComponent<PolygonCollider2D>();
-        
+
         if (polygonCollider == null)
         {
             Debug.LogError("PolygonCollider2D が見つかりません: " + gameObject.name);
