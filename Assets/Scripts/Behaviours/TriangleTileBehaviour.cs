@@ -55,7 +55,8 @@ public class TriangleTileBehaviour : MonoBehaviour
     [SerializeField] private Collider2D downwardCollider;
 
     [SerializeField] private float flipDuration = 0.3f;
-
+    public delegate void BoardStateChangedHandler(StageLogic.Board board);
+    public static event BoardStateChangedHandler OnBoardStateChanged;
     private enum FlipState
     {
         NotFlipping,
@@ -193,16 +194,22 @@ public class TriangleTileBehaviour : MonoBehaviour
             flipProgress = 1;
             flipState = FlipState.NotFlipping;
 
-            // ボードの状態を更新
             if (tileIndex != -1 && stageManager != null)
             {
-                stageManager.playerBoard.boardState[tileIndex] = isFront;
+                stageManager.playerBoard.SetTileState(tileIndex, isFront);
+                // フリップ完了時に盤面の状態変化を通知
+                OnBoardStateChanged?.Invoke(stageManager.playerBoard);
             }
         }
         else if (flipProgress >= 0.5f && flipState == FlipState.FlippingBeforeHalf)
         {
             flipState = FlipState.FlippingAfterHalf;
             isFront = !isFront;
+
+            if (tileIndex != -1 && stageManager != null)
+            {
+                stageManager.playerBoard.FlipTile(tileIndex);
+            }
         }
 
         if (flipProgress < 0.5f)

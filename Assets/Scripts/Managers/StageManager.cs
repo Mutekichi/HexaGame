@@ -1,5 +1,5 @@
+using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Rendering;
 using UnityEngine;
 
 public class StageManager : MonoBehaviour
@@ -9,6 +9,7 @@ public class StageManager : MonoBehaviour
     public GameObject PlayerBoardInstance;
     public StageLogic.Board playerBoard;
     public List<GameObject> playerTiles;
+    private BitArray targetPattern;
 
     private class BoardScaleInfo
     {
@@ -26,14 +27,42 @@ public class StageManager : MonoBehaviour
     {
         FindPlayerBoard();
         Test();
+        TriangleTileBehaviour.OnBoardStateChanged += CheckBoardState;
+        targetPattern = new BitArray(playerBoard.size, false);
     }
 
-    void Update()
+    void OnDestroy()
     {
-
+        TriangleTileBehaviour.OnBoardStateChanged -= CheckBoardState;
     }
 
-    void Test()
+    private void FindPlayerBoard()
+    {
+        GameObject playerBoard = GameObject.Find("PlayerBoardInstance");
+        Debug.Log(playerBoard ? "PlayerBoardInstance found" : "PlayerBoardInstance not found");
+    }
+
+    private void CheckBoardState(StageLogic.Board board)
+    {
+        if (board.MatchesPattern(targetPattern))
+        {
+            Debug.Log("Target pattern achieved!");
+            OnPuzzleComplete();
+        }
+        Debug.Log($"Current board state: {board.GetCurrentStateString()}");
+    }
+
+    private void OnPuzzleComplete()
+    {
+        Debug.Log("Puzzle Complete!");
+    }
+
+    public void SetTargetPattern(BitArray pattern)
+    {
+        targetPattern = pattern;
+    }
+
+    private void Test()
     {
         StageLogic.CellExpression cellExpression = new StageLogic.CellExpression(
             4,
@@ -49,17 +78,10 @@ public class StageManager : MonoBehaviour
         playerTiles = PlaceBoardFromPlaceExpression(cellExpression, new Vector3(0, 0, 0), 12f, 12f);
         playerBoard = StageLogic.CellExpression.GenerateBoard(cellExpression);
 
-        // タイルの接続関係を表示
         foreach (var tile in playerBoard.tiles)
         {
             Debug.Log($"Tile {tile.index} has neighbors: {string.Join(", ", tile.neighbors)}");
         }
-    }
-
-    private void FindPlayerBoard()
-    {
-        GameObject playerBoard = GameObject.Find("PlayerBoardInstance");
-        Debug.Log(playerBoard ? "PlayerBoardInstance found" : "PlayerBoardInstance not found");
     }
 
     private List<GameObject> PlaceBoardFromPlaceExpression(StageLogic.CellExpression cellExpression, Vector3 center, float height, float width)
@@ -69,7 +91,6 @@ public class StageManager : MonoBehaviour
         float boardHeightByTileUnit = cellExpression.height * Mathf.Sqrt(3) / 2f;
 
         BoardScaleInfo scaleInfo = GetBoardScaleAndOrigin(boardWidthByTileUnit, boardHeightByTileUnit, width, height);
-
         int tileIndex = 0;
 
         for (int ih = cellExpression.height - 1; ih >= 0; --ih)
@@ -80,6 +101,7 @@ public class StageManager : MonoBehaviour
                 {
                     continue;
                 }
+
                 Vector3 offset = new Vector3(-width, -height, 0) / 2f + scaleInfo.origin;
                 bool isDownwardTile = StageLogic.IsDownwardTileFromIndex(ih, iw, cellExpression.isTopLeftTriangleDownward);
                 GameObject tile = PlaceTriangleTile(
@@ -99,7 +121,7 @@ public class StageManager : MonoBehaviour
         return tiles;
     }
 
-    private GameObject PlaceTriangleTile(Vector3 position, float scale = 1f, bool isUpward = true, bool isFront = true, int tileIndex = -1)
+    private GameObject PlaceTriangleTile(Vector3 position, float scale, bool isUpward, bool isFront, int tileIndex)
     {
         GameObject triangleTile = Instantiate(TriangleTilePrefab, PlayerBoardInstance.transform);
         triangleTile.transform.localPosition = position;
@@ -116,13 +138,7 @@ public class StageManager : MonoBehaviour
         return triangleTile;
     }
 
-    private static BoardScaleInfo GetBoardScaleAndOrigin
-    (
-        float boardWidthByTileUnit,
-        float boardHeightByTileUnit,
-        float maxBoardWidth,
-        float maxBoardHeight
-    )
+    private static BoardScaleInfo GetBoardScaleAndOrigin(float boardWidthByTileUnit, float boardHeightByTileUnit, float maxBoardWidth, float maxBoardHeight)
     {
         Debug.Log($"Board width by tile unit: {boardWidthByTileUnit}, board height by tile unit: {boardHeightByTileUnit}");
 

@@ -5,10 +5,6 @@ using UnityEngine;
 
 public class StageLogic
 {
-    void Start()
-    {
-        Test();
-    }
     public struct Stage
     {
         public Board initialBoard;
@@ -25,18 +21,71 @@ public class StageLogic
         public int[] neighbors;
     }
 
-    public struct Board
-    {
-        public int size;
-        public Tile[] tiles;
-        public BitArray boardState;
-    }
-
     public enum CellState
     {
         Empty,
         Front,
         Back
+    }
+
+    public class Board
+    {
+        public int size;
+        public Tile[] tiles;
+        public BitArray boardState;
+
+        public Board(int size, Tile[] tiles, BitArray boardState)
+        {
+            this.size = size;
+            this.tiles = tiles;
+            this.boardState = boardState;
+        }
+
+        public void FlipTile(int index)
+        {
+            if (index >= 0 && index < size)
+            {
+                boardState[index] = !boardState[index];
+            }
+        }
+
+        public bool IsTileFront(int index)
+        {
+            if (index >= 0 && index < size)
+            {
+                return boardState[index];
+            }
+            return false;
+        }
+
+        public void SetTileState(int index, bool isFront)
+        {
+            if (index >= 0 && index < size)
+            {
+                boardState[index] = isFront;
+            }
+        }
+
+        public bool MatchesPattern(BitArray pattern)
+        {
+            if (pattern.Length != boardState.Length) return false;
+
+            for (int i = 0; i < size; i++)
+            {
+                if (boardState[i] != pattern[i]) return false;
+            }
+            return true;
+        }
+
+        public string GetCurrentStateString()
+        {
+            char[] stateChars = new char[size];
+            for (int i = 0; i < size; i++)
+            {
+                stateChars[i] = boardState[i] ? '1' : '0';
+            }
+            return new string(stateChars);
+        }
     }
 
     public struct CellExpression
@@ -62,7 +111,6 @@ public class StageLogic
             CellState[,] cells = cellExpression.cells;
 
             int[,] tileIndices = new int[height, width];
-
             int size = CalcBoardSize(cells);
             Tile[] tiles = new Tile[size];
             BitArray boardState = new BitArray(size);
@@ -119,12 +167,7 @@ public class StageLogic
                 }
             }
 
-            return new Board
-            {
-                size = size,
-                tiles = tiles,
-                boardState = boardState
-            };
+            return new Board(size, tiles, boardState);
         }
 
         private static int CalcBoardSize(CellState[,] board)
@@ -200,6 +243,12 @@ public class StageLogic
     {
         return isTopLeftTriangleDownward ? (ih + iw) % 2 == 0 : (ih + iw) % 2 == 1;
     }
+
+    private static bool IsDownwardTile(int ih, int iw, bool isTopLeftTriangleDownward)
+    {
+        return isTopLeftTriangleDownward ? (ih + iw) % 2 == 0 : (ih + iw) % 2 == 1;
+    }
+
     public static CellState[,] GetCellStateStringsFromStringExpression(string[] stringExpression, int height, int width)
     {
         CellState[,] cellExpression = new CellState[height, width];
@@ -226,40 +275,8 @@ public class StageLogic
         return cellExpression;
     }
 
-    private static bool IsDownwardTile(int ih, int iw, bool isTopLeftTriangleDownward)
-    {
-        return isTopLeftTriangleDownward ? (ih + iw) % 2 == 0 : (ih + iw) % 2 == 1;
-    }
-
     public static (float width, float height) GetBoardSizeFromCellExpression(CellExpression cellExpression)
     {
         return (cellExpression.width * 0.5f + 0.5f, cellExpression.height * Mathf.Sqrt(3) / 2f);
-    }
-
-    public static void Test()
-    {
-        string[] stringExpression = new string[] {
-            "0212120",
-            "1212121",
-            "2121212",
-            "0000020"
-        };
-
-        int sampleHeight = 4;
-        int sampleWidth = 7;
-
-        try
-        {
-            CellState[,] cellStateStrings = GetCellStateStringsFromStringExpression(stringExpression, sampleHeight, sampleWidth);
-            CellExpression sampleCellExpression = new(sampleHeight, sampleWidth, true, cellStateStrings);
-            Board sampleBoard = CellExpression.GenerateBoard(sampleCellExpression);
-
-            Debug.Log(BoardHelper.GetBoardVisualization(sampleBoard));
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Error during board generation: {e.Message}");
-            Debug.LogException(e);
-        }
     }
 }
