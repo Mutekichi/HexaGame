@@ -201,7 +201,6 @@ public class TriangleTileBehaviour : MonoBehaviour
             if (tileIndex != -1 && stageManager != null)
             {
                 stageManager.playerBoard.SetTileState(tileIndex, isFront);
-                // フリップ完了時に盤面の状態変化を通知
                 OnBoardStateChanged?.Invoke(stageManager.playerBoard);
             }
         }
@@ -230,10 +229,8 @@ public class TriangleTileBehaviour : MonoBehaviour
     {
         if (tileIndex == -1 || stageManager == null) return;
 
-        // 現在のタイルの隣接情報を取得
         StageLogic.Tile currentTile = stageManager.playerBoard.tiles[tileIndex];
 
-        // 隣接タイルをフリップ
         foreach (int neighborIndex in currentTile.neighbors)
         {
             if (neighborIndex != -1 && neighborIndex < stageManager.playerTiles.Count)

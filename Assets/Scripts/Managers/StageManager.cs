@@ -1,15 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class StageManager : MonoBehaviour
 {
     public int stageNumber;
     public GameObject TriangleTilePrefab;
     public GameObject PlayerBoardInstance;
+
+    [HideInInspector]
     public StageLogic.Board playerBoard;
+
+    [HideInInspector]
     public List<GameObject> playerTiles;
-    private BitArray targetPattern;
+    public int height;
+    public int width;
+    public bool isTopLeftTriangleDownward;
+    public string[] initialPattern;
+    public BitArray targetPattern;
 
     private class BoardScaleInfo
     {
@@ -25,10 +34,9 @@ public class StageManager : MonoBehaviour
 
     void Start()
     {
-        FindPlayerBoard();
+        CheckIsBoardValid();
         Test();
         TriangleTileBehaviour.OnBoardStateChanged += CheckBoardState;
-        targetPattern = new BitArray(playerBoard.size, false);
     }
 
     void OnDestroy()
@@ -36,20 +44,26 @@ public class StageManager : MonoBehaviour
         TriangleTileBehaviour.OnBoardStateChanged -= CheckBoardState;
     }
 
-    private void FindPlayerBoard()
-    {
-        GameObject playerBoard = GameObject.Find("PlayerBoardInstance");
-        // Debug.Log(playerBoard ? "PlayerBoardInstance found" : "PlayerBoardInstance not found");
-    }
-
     private void CheckBoardState(StageLogic.Board board)
     {
         if (board.MatchesPattern(targetPattern))
         {
-            // Debug.Log("Target pattern achieved!");
             OnPuzzleComplete();
         }
-        // Debug.Log($"Current board state: {board.GetCurrentStateString()}");
+    }
+    private void CheckIsBoardValid()
+    {
+        if (initialPattern.Length != height)
+        {
+            Debug.LogError("Invalid height of initial pattern");
+        }
+        for (int i = 0; i < height; i++)
+        {
+            if (initialPattern[i].Length != width)
+            {
+                Debug.LogError("Invalid width of initial pattern");
+            }
+        }
     }
 
     private void OnPuzzleComplete()
@@ -65,23 +79,17 @@ public class StageManager : MonoBehaviour
     private void Test()
     {
         StageLogic.CellExpression cellExpression = new StageLogic.CellExpression(
-            4,
-            7,
-            true,
-            StageLogic.GetCellStateStringsFromStringExpression(new string[] {
-                "0212120",
-                "2121212",
-                "1212121",
-                "0000010"
-            }, 4, 7)
+            height,
+            width,
+            isTopLeftTriangleDownward,
+            StageLogic.GetCellStateStringsFromStringExpression(
+                initialPattern,
+                height,
+                width
+            )
         );
         playerTiles = PlaceBoardFromPlaceExpression(cellExpression, new Vector3(0, 0, 0), 12f, 12f);
         playerBoard = StageLogic.CellExpression.GenerateBoard(cellExpression);
-
-        foreach (var tile in playerBoard.tiles)
-        {
-            // Debug.Log($"Tile {tile.index} has neighbors: {string.Join(", ", tile.neighbors)}");
-        }
     }
 
     private List<GameObject> PlaceBoardFromPlaceExpression(StageLogic.CellExpression cellExpression, Vector3 center, float height, float width)
