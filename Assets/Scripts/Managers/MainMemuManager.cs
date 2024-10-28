@@ -45,7 +45,7 @@ public class MainMenuManager : MonoBehaviour
         // リスナーの解除
         if (stageSelectButton != null)
             stageSelectButton.onClick.RemoveListener(OnStageSelectButtonClicked);
-            
+
         if (timeAttackButton != null)
             timeAttackButton.onClick.RemoveListener(OnTimeAttackButtonClicked);
     }

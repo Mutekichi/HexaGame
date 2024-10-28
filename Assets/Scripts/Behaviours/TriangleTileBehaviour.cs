@@ -118,6 +118,10 @@ public class TriangleTileBehaviour : MonoBehaviour
 
     private void CheckForClick()
     {
+        if (GameUIManager.IsMenuVisible())
+        {
+            return;
+        }
         if (Input.GetMouseButtonDown(0))
         {
             Vector2 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);

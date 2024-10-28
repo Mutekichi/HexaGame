@@ -39,22 +39,22 @@ public class StageManager : MonoBehaviour
     private void FindPlayerBoard()
     {
         GameObject playerBoard = GameObject.Find("PlayerBoardInstance");
-        Debug.Log(playerBoard ? "PlayerBoardInstance found" : "PlayerBoardInstance not found");
+        // Debug.Log(playerBoard ? "PlayerBoardInstance found" : "PlayerBoardInstance not found");
     }
 
     private void CheckBoardState(StageLogic.Board board)
     {
         if (board.MatchesPattern(targetPattern))
         {
-            Debug.Log("Target pattern achieved!");
+            // Debug.Log("Target pattern achieved!");
             OnPuzzleComplete();
         }
-        Debug.Log($"Current board state: {board.GetCurrentStateString()}");
+        // Debug.Log($"Current board state: {board.GetCurrentStateString()}");
     }
 
     private void OnPuzzleComplete()
     {
-        Debug.Log("Puzzle Complete!");
+        // Debug.Log("Puzzle Complete!");
     }
 
     public void SetTargetPattern(BitArray pattern)
@@ -80,7 +80,7 @@ public class StageManager : MonoBehaviour
 
         foreach (var tile in playerBoard.tiles)
         {
-            Debug.Log($"Tile {tile.index} has neighbors: {string.Join(", ", tile.neighbors)}");
+            // Debug.Log($"Tile {tile.index} has neighbors: {string.Join(", ", tile.neighbors)}");
         }
     }
 
@@ -140,7 +140,7 @@ public class StageManager : MonoBehaviour
 
     private static BoardScaleInfo GetBoardScaleAndOrigin(float boardWidthByTileUnit, float boardHeightByTileUnit, float maxBoardWidth, float maxBoardHeight)
     {
-        Debug.Log($"Board width by tile unit: {boardWidthByTileUnit}, board height by tile unit: {boardHeightByTileUnit}");
+        // Debug.Log($"Board width by tile unit: {boardWidthByTileUnit}, board height by tile unit: {boardHeightByTileUnit}");
 
         if (boardWidthByTileUnit / boardHeightByTileUnit > maxBoardWidth / maxBoardHeight)
         {
