@@ -1,3 +1,4 @@
+// GameUIManager.cs
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -6,52 +7,121 @@ public class GameUIManager : MonoBehaviour
 {
     private static GameUIManager instance;
 
+    [Header("UI Elements")]
     [SerializeField] private GameObject hamburgerMenuButton;
     [SerializeField] private GameObject menuWindow;
     [SerializeField] private GameObject retryButton;
     [SerializeField] private GameObject backToStageSelectButton;
     [SerializeField] private GameObject closeWindowButton;
 
+    [Header("Settings")]
+    [SerializeField] private bool pauseOnMenuShow = true;
+
+    private ICustomButton hamburgerMenuButtonInterface;
+    private ICustomButton retryButtonInterface;
+    private ICustomButton backToStageSelectButtonInterface;
+    private ICustomButton closeWindowButtonInterface;
+
     private void Awake()
     {
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
         instance = this;
+
+        InitializeButtonInterfaces();
     }
 
-    public static bool IsMenuVisible()
+    private void InitializeButtonInterfaces()
     {
-        return instance != null && instance.IsMenuWindowVisible();
+        hamburgerMenuButtonInterface = GetButtonInterface(hamburgerMenuButton);
+        retryButtonInterface = GetButtonInterface(retryButton);
+        backToStageSelectButtonInterface = GetButtonInterface(backToStageSelectButton);
+        closeWindowButtonInterface = GetButtonInterface(closeWindowButton);
     }
+
+    private ICustomButton GetButtonInterface(GameObject buttonObject)
+    {
+        if (buttonObject == null) return null;
+
+        var standardWrapper = buttonObject.GetComponent<StandardButtonWrapper>();
+        if (standardWrapper == null)
+        {
+            standardWrapper = buttonObject.GetComponent<Button>() != null
+                ? buttonObject.AddComponent<StandardButtonWrapper>()
+                : null;
+        }
+
+        var triangleWrapper = buttonObject.GetComponent<TriangleButtonWrapper>();
+        if (triangleWrapper == null)
+        {
+            triangleWrapper = buttonObject.GetComponent<TriangleButton>() != null
+                ? buttonObject.AddComponent<TriangleButtonWrapper>()
+                : null;
+        }
+
+        return (ICustomButton)standardWrapper ?? triangleWrapper;
+    }
+
+    public static bool IsMenuVisible() => instance != null && instance.IsMenuWindowVisible();
 
     private void Start()
+    {
+        InitializeUI();
+        SetupButtons();
+    }
+
+    private void InitializeUI()
     {
         if (menuWindow != null)
         {
             menuWindow.SetActive(false);
         }
 
-        SetupButtons();
+        SetupButtonIfExists(hamburgerMenuButtonInterface);
+        SetupButtonIfExists(retryButtonInterface);
+        SetupButtonIfExists(backToStageSelectButtonInterface);
+        SetupButtonIfExists(closeWindowButtonInterface);
+    }
+
+    private void SetupButtonIfExists(ICustomButton button)
+    {
+        if (button != null)
+        {
+            button.interactable = true;
+        }
     }
 
     private void SetupButtons()
     {
-        if (hamburgerMenuButton != null)
+        if (hamburgerMenuButtonInterface != null)
         {
-            hamburgerMenuButton.GetComponent<Button>()?.onClick.AddListener(ShowMenuWindow);
+            hamburgerMenuButtonInterface.onClick.AddListener(ShowMenuWindow);
         }
 
-        if (retryButton != null)
+        if (retryButtonInterface != null)
         {
-            retryButton.GetComponent<Button>()?.onClick.AddListener(OnRetryButtonClicked);
+            retryButtonInterface.onClick.AddListener(() =>
+            {
+                HideMenuWindow();
+                OnRetryButtonClicked();
+            });
         }
 
-        if (backToStageSelectButton != null)
+        if (backToStageSelectButtonInterface != null)
         {
-            backToStageSelectButton.GetComponent<Button>()?.onClick.AddListener(OnBackToStageSelectButtonClicked);
+            backToStageSelectButtonInterface.onClick.AddListener(() =>
+            {
+                HideMenuWindow();
+                OnBackToStageSelectButtonClicked();
+            });
         }
 
-        if (closeWindowButton != null)
+        if (closeWindowButtonInterface != null)
         {
-            closeWindowButton.GetComponent<Button>()?.onClick.AddListener(HideMenuWindow);
+            closeWindowButtonInterface.onClick.AddListener(HideMenuWindow);
         }
     }
 
@@ -60,6 +130,10 @@ public class GameUIManager : MonoBehaviour
         if (menuWindow != null)
         {
             menuWindow.SetActive(true);
+            if (pauseOnMenuShow)
+            {
+                PauseGame();
+            }
         }
     }
 
@@ -68,18 +142,24 @@ public class GameUIManager : MonoBehaviour
         if (menuWindow != null)
         {
             menuWindow.SetActive(false);
+            if (pauseOnMenuShow)
+            {
+                ResumeGame();
+            }
         }
     }
 
     private void OnRetryButtonClicked()
     {
+        ResumeGame();
         string currentSceneName = SceneManager.GetActiveScene().name;
-        SceneManager.LoadScene(currentSceneName);
+        LoadSceneWithTransition(currentSceneName);
     }
 
     private void OnBackToStageSelectButtonClicked()
     {
-        SceneManager.LoadScene("StageSelect");
+        ResumeGame();
+        LoadSceneWithTransition("StageSelect");
     }
 
     private void LoadSceneWithTransition(string sceneName)
@@ -104,39 +184,31 @@ public class GameUIManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (hamburgerMenuButton != null)
-        {
-            var button = hamburgerMenuButton.GetComponent<Button>();
-            if (button != null)
-            {
-                button.onClick.RemoveAllListeners();
-            }
-        }
+        CleanupButtonListeners(hamburgerMenuButtonInterface);
+        CleanupButtonListeners(retryButtonInterface);
+        CleanupButtonListeners(backToStageSelectButtonInterface);
+        CleanupButtonListeners(closeWindowButtonInterface);
+    }
 
-        if (retryButton != null)
+    private void CleanupButtonListeners(ICustomButton button)
+    {
+        if (button?.onClick != null)
         {
-            var button = retryButton.GetComponent<Button>();
-            if (button != null)
-            {
-                button.onClick.RemoveAllListeners();
-            }
+            button.onClick.RemoveAllListeners();
         }
+    }
 
-        if (backToStageSelectButton != null)
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
         {
-            var button = backToStageSelectButton.GetComponent<Button>();
-            if (button != null)
+            if (IsMenuWindowVisible())
             {
-                button.onClick.RemoveAllListeners();
+                HideMenuWindow();
             }
-        }
-
-        if (closeWindowButton != null)
-        {
-            var button = closeWindowButton.GetComponent<Button>();
-            if (button != null)
+            else
             {
-                button.onClick.RemoveAllListeners();
+                ShowMenuWindow();
             }
         }
     }

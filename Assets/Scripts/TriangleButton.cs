@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.Events;
 
 [RequireComponent(typeof(CanvasRenderer))]
 public class TriangleButton : Graphic, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
@@ -8,10 +9,39 @@ public class TriangleButton : Graphic, IPointerClickHandler, IPointerEnterHandle
     private Vector2[] trianglePoints = new Vector2[3];
     private Canvas parentCanvas;
 
+    // UnityEventを追加
+    [SerializeField]
+    private Button.ButtonClickedEvent m_OnClick = new Button.ButtonClickedEvent();
+    public Button.ButtonClickedEvent onClick
+    {
+        get { return m_OnClick; }
+        set { m_OnClick = value; }
+    }
+
+    // ボタンの状態
+    private bool m_Interactable = true;
+    public bool interactable
+    {
+        get { return m_Interactable; }
+        set
+        {
+            m_Interactable = value;
+            if (!m_Interactable)
+            {
+                // 無効時は薄いグレー
+                color = new Color(1f, 1f, 1f, 0.5f);
+            }
+            else
+            {
+                color = Color.white;
+            }
+            SetVerticesDirty();
+        }
+    }
+
     protected override void Awake()
     {
         base.Awake();
-        // 親のCanvasを検索して保持
         parentCanvas = GetComponentInParent<Canvas>();
         if (parentCanvas == null)
         {
@@ -39,27 +69,22 @@ public class TriangleButton : Graphic, IPointerClickHandler, IPointerEnterHandle
     {
         vh.Clear();
 
-        // RectTransformのサイズを取得
         float width = rectTransform.rect.width;
         float height = rectTransform.rect.height;
 
-        // 三角形の頂点を設定
-        trianglePoints[0] = new Vector2(width * 0.5f, 0);    // 下部中央
-        trianglePoints[1] = new Vector2(0, height);          // 左上
-        trianglePoints[2] = new Vector2(width, height);      // 右上
+        trianglePoints[0] = new Vector2(width * 0.5f, 0);
+        trianglePoints[1] = new Vector2(0, height);
+        trianglePoints[2] = new Vector2(width, height);
 
-        // UIVertex設定
         UIVertex vertex = UIVertex.simpleVert;
         vertex.color = color;
 
-        // 頂点追加
         for (int i = 0; i < 3; i++)
         {
             vertex.position = new Vector3(trianglePoints[i].x, trianglePoints[i].y);
             vh.AddVert(vertex);
         }
 
-        // 三角形描画
         vh.AddTriangle(0, 1, 2);
     }
 
@@ -82,17 +107,27 @@ public class TriangleButton : Graphic, IPointerClickHandler, IPointerEnterHandle
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (!m_Interactable) return;
+
+        if (m_OnClick != null)
+        {
+            m_OnClick.Invoke();
+        }
         Debug.Log($"{gameObject.name} Clicked!");
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (!m_Interactable) return;
+
         color = Color.gray;
         SetVerticesDirty();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        if (!m_Interactable) return;
+
         color = Color.white;
         SetVerticesDirty();
     }
@@ -101,7 +136,6 @@ public class TriangleButton : Graphic, IPointerClickHandler, IPointerEnterHandle
     protected override void OnValidate()
     {
         base.OnValidate();
-        // インスペクタでの変更時に見た目を更新
         SetVerticesDirty();
     }
 #endif
