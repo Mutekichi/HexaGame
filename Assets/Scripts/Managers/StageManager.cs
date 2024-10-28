@@ -8,17 +8,19 @@ public class StageManager : MonoBehaviour
     public int stageNumber;
     public GameObject TriangleTilePrefab;
     public GameObject PlayerBoardInstance;
+    public GameObject TargetBoardInstance;
 
     [HideInInspector]
     public StageLogic.Board playerBoard;
 
     [HideInInspector]
     public List<GameObject> playerTiles;
-    public int height;
-    public int width;
-    public bool isTopLeftTriangleDownward;
-    public string[] initialPattern;
-    public BitArray targetPattern;
+    [SerializeField] private int height;
+    [SerializeField] private int width;
+    [SerializeField] private bool isTopLeftTriangleDownward;
+    [SerializeField] private string[] initialPattern;
+    [SerializeField] private string[] targetPattern;
+    private BitArray targetPatternBitArray;
 
     private class BoardScaleInfo
     {
@@ -35,6 +37,7 @@ public class StageManager : MonoBehaviour
     void Start()
     {
         CheckIsBoardValid();
+        MakeTargetPatternBitArray();
         Test();
         TriangleTileBehaviour.OnBoardStateChanged += CheckBoardState;
     }
@@ -46,7 +49,7 @@ public class StageManager : MonoBehaviour
 
     private void CheckBoardState(StageLogic.Board board)
     {
-        if (board.MatchesPattern(targetPattern))
+        if (board.MatchesPattern(targetPatternBitArray))
         {
             OnPuzzleComplete();
         }
@@ -64,6 +67,25 @@ public class StageManager : MonoBehaviour
                 Debug.LogError("Invalid width of initial pattern");
             }
         }
+        for (int i = 0; i < height; ++i)
+        {
+            for (int j = 0; j < width; ++j)
+            {
+                if (initialPattern[i][j] != '0' && initialPattern[i][j] != '1' && initialPattern[i][j] != '2')
+                {
+                    Debug.LogError("Invalid initial pattern");
+                }
+                if (targetPattern[i][j] != '0' && targetPattern[i][j] != '1' && targetPattern[i][j] != '2')
+                {
+                    Debug.LogError("Invalid target pattern");
+                }
+                if ((initialPattern[i][j] == '0' && targetPattern[i][j] != '0') ||
+                    (initialPattern[i][j] != '0' && targetPattern[i][j] == '0'))
+                {
+                    Debug.LogError("Invalid initial and target pattern");
+                }
+            }
+        }
     }
 
     private void OnPuzzleComplete()
@@ -73,12 +95,36 @@ public class StageManager : MonoBehaviour
 
     public void SetTargetPattern(BitArray pattern)
     {
-        targetPattern = pattern;
+        targetPatternBitArray = pattern;
     }
 
+    private void MakeTargetPatternBitArray()
+    {
+        BitArray __targetPatternBitArray = new BitArray(0);
+        for (int i = 0; i < __targetPatternBitArray.Length; ++i)
+        {
+            if (targetPattern[i] == "0")
+            {
+                continue;
+            }
+            else if (targetPattern[i] == "1")
+            {
+                __targetPatternBitArray.Set(i, true);
+            }
+            else if (targetPattern[i] == "2")
+            {
+                __targetPatternBitArray.Set(i, false);
+            }
+            else
+            {
+                Debug.LogError("Invalid target pattern");
+            }
+        }
+        targetPatternBitArray = __targetPatternBitArray;
+    }
     private void Test()
     {
-        StageLogic.CellExpression cellExpression = new StageLogic.CellExpression(
+        StageLogic.CellExpression playerBoardCellExpression = new StageLogic.CellExpression(
             height,
             width,
             isTopLeftTriangleDownward,
@@ -88,11 +134,22 @@ public class StageManager : MonoBehaviour
                 width
             )
         );
-        playerTiles = PlaceBoardFromPlaceExpression(cellExpression, new Vector3(0, 0, 0), 12f, 12f);
-        playerBoard = StageLogic.CellExpression.GenerateBoard(cellExpression);
+        StageLogic.CellExpression targetBoardCellExpression = new StageLogic.CellExpression(
+            height,
+            width,
+            isTopLeftTriangleDownward,
+            StageLogic.GetCellStateStringsFromStringExpression(
+                targetPattern,
+                height,
+                width
+            )
+        );
+        PlaceBoardFromCellExpression(targetBoardCellExpression, new Vector3(0, 0, 0), 6f, 6f, TargetBoardInstance);
+        playerTiles = PlaceBoardFromCellExpression(playerBoardCellExpression, new Vector3(0, 0, 0), 12f, 12f, PlayerBoardInstance);
+        playerBoard = StageLogic.CellExpression.GenerateBoard(playerBoardCellExpression);
     }
 
-    private List<GameObject> PlaceBoardFromPlaceExpression(StageLogic.CellExpression cellExpression, Vector3 center, float height, float width)
+    private List<GameObject> PlaceBoardFromCellExpression(StageLogic.CellExpression cellExpression, Vector3 center, float height, float width, GameObject objectToAttach = null)
     {
         List<GameObject> tiles = new List<GameObject>();
         float boardWidthByTileUnit = cellExpression.width * 0.5f + 0.5f;
@@ -121,7 +178,8 @@ public class StageManager : MonoBehaviour
                     scaleInfo.tileUnit / 2f,
                     !isDownwardTile,
                     cellExpression.cells[ih, iw] == StageLogic.CellState.Front,
-                    tileIndex++
+                    tileIndex++,
+                    objectToAttach
                 );
                 tiles.Add(tile);
             }
@@ -129,9 +187,9 @@ public class StageManager : MonoBehaviour
         return tiles;
     }
 
-    private GameObject PlaceTriangleTile(Vector3 position, float scale, bool isUpward, bool isFront, int tileIndex)
+    private GameObject PlaceTriangleTile(Vector3 position, float scale, bool isUpward, bool isFront, int tileIndex, GameObject objectToAttach = null)
     {
-        GameObject triangleTile = Instantiate(TriangleTilePrefab, PlayerBoardInstance.transform);
+        GameObject triangleTile = Instantiate(TriangleTilePrefab, objectToAttach != null ? objectToAttach.transform : PlayerBoardInstance.transform);
         triangleTile.transform.localPosition = position;
         triangleTile.transform.localScale = new Vector3(scale, scale, 1);
 
