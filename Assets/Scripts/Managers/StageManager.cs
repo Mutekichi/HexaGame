@@ -267,35 +267,77 @@ public class StageManager : MonoBehaviour
 
     private void GenerateFrame()
     {
-        if (playerBoard == null || playerTiles == null) return;
+        if (PlayerBoardInstance == null || TargetBoardInstance == null) return;
 
         ClearBorders();
 
-        Dictionary<int, GameObject> tileIndexToGameObject = new Dictionary<int, GameObject>();
-        for (int i = 0; i < playerTiles.Count; i++)
+        // Player Board用のフレーム生成
+        if (playerBoard != null && playerTiles != null)
         {
-            var tileBehaviour = playerTiles[i].GetComponent<TriangleTileBehaviour>();
-            tileIndexToGameObject[tileBehaviour.GetTileIndex()] = playerTiles[i];
+            Dictionary<int, GameObject> tileIndexToGameObject = new Dictionary<int, GameObject>();
+            for (int i = 0; i < playerTiles.Count; i++)
+            {
+                var tileBehaviour = playerTiles[i].GetComponent<TriangleTileBehaviour>();
+                tileIndexToGameObject[tileBehaviour.GetTileIndex()] = playerTiles[i];
+            }
+
+            foreach (StageLogic.Tile tile in playerBoard.tiles)
+            {
+                if (!tileIndexToGameObject.TryGetValue(tile.index, out GameObject tileObject)) continue;
+
+                Vector3 center = tileObject.transform.position;
+                float scale = tileObject.GetComponent<TriangleTileBehaviour>().GetScale();
+
+                foreach (EdgeDirectionBetweenTiles direction in tileFacingUpToDirections[tile.isUpward])
+                {
+                    bool isOuterEdge = IsOuterEdge(tile, direction);
+
+                    PlaceBorderSprite(
+                        center + unitEdgeDirectionToVector[direction] * distanceBetweenTileCenters * scale / 2,
+                        edgeDirectionToAngle[direction],
+                        scale,
+                        isOuterEdge ? 1f : 0.4f,
+                        PlayerBoardInstance
+                    );
+                }
+            }
         }
 
-        foreach (StageLogic.Tile tile in playerBoard.tiles)
+        // Target Board用のフレーム生成
+        if (playerBoard != null)  // playerBoardの構造を使用
         {
-            if (!tileIndexToGameObject.TryGetValue(tile.index, out GameObject tileObject)) continue;
-
-            Vector3 center = tileObject.transform.position;
-            float scale = tileObject.GetComponent<TriangleTileBehaviour>().GetScale();
-
-            foreach (EdgeDirectionBetweenTiles direction in tileFacingUpToDirections[tile.isUpward])
+            var targetTiles = new List<GameObject>();
+            for (int i = 0; i < TargetBoardInstance.transform.childCount; i++)
             {
-                // タイルのエッジが外側かどうかを判定
-                bool isOuterEdge = IsOuterEdge(tile, direction);
+                targetTiles.Add(TargetBoardInstance.transform.GetChild(i).gameObject);
+            }
 
-                PlaceBorderSprite(
-                    center + unitEdgeDirectionToVector[direction] * distanceBetweenTileCenters * scale / 2,
-                    edgeDirectionToAngle[direction],
-                    scale,
-                    isOuterEdge ? 1f : 0.4f
-                );
+            Dictionary<int, GameObject> tileIndexToGameObject = new Dictionary<int, GameObject>();
+            for (int i = 0; i < targetTiles.Count; i++)
+            {
+                var tileBehaviour = targetTiles[i].GetComponent<TriangleTileBehaviour>();
+                tileIndexToGameObject[tileBehaviour.GetTileIndex()] = targetTiles[i];
+            }
+
+            foreach (StageLogic.Tile tile in playerBoard.tiles)
+            {
+                if (!tileIndexToGameObject.TryGetValue(tile.index, out GameObject tileObject)) continue;
+
+                Vector3 center = tileObject.transform.position;
+                float scale = tileObject.GetComponent<TriangleTileBehaviour>().GetScale();
+
+                foreach (EdgeDirectionBetweenTiles direction in tileFacingUpToDirections[tile.isUpward])
+                {
+                    bool isOuterEdge = IsOuterEdge(tile, direction);
+
+                    PlaceBorderSprite(
+                        center + unitEdgeDirectionToVector[direction] * distanceBetweenTileCenters * scale / 2,
+                        edgeDirectionToAngle[direction],
+                        scale,
+                        isOuterEdge ? 1f : 0.4f,
+                        TargetBoardInstance
+                    );
+                }
             }
         }
     }
@@ -313,9 +355,18 @@ public class StageManager : MonoBehaviour
         return neighborIndex == -1;
     }
 
-    private void PlaceBorderSprite(Vector3 center, float angle, float scale, float alpha = 1f)
+    private void PlaceBorderSprite(Vector3 center, float angle, float scale, float alpha, GameObject objectToAttach)
     {
-        Transform framesParent = GameObject.Find("Frames")?.transform ?? new GameObject("Frames").transform;
+        string framesName = objectToAttach == PlayerBoardInstance ? "PlayerFrames" : "TargetFrames";
+        Transform framesParent = objectToAttach.transform.Find(framesName);
+        if (framesParent == null)
+        {
+            var framesObject = new GameObject(framesName);
+            framesParent = framesObject.transform;
+            framesParent.SetParent(objectToAttach.transform);
+            framesParent.localPosition = Vector3.zero;
+        }
+
         GameObject sprite = Instantiate(frameSpritePrefab, center, Quaternion.identity, framesParent);
         sprite.transform.Rotate(Vector3.forward, angle);
         sprite.transform.localScale = sprite.transform.localScale * scale;
@@ -328,16 +379,31 @@ public class StageManager : MonoBehaviour
 
     private void ClearBorders()
     {
-        GameObject[] sprites = GameObject.FindGameObjectsWithTag("Border");
-        foreach (GameObject sprite in sprites)
+        // PlayerFramesのクリア
+        Transform playerFrames = PlayerBoardInstance?.transform.Find("PlayerFrames");
+        if (playerFrames != null)
         {
             if (Application.isPlaying)
             {
-                Destroy(sprite);
+                Destroy(playerFrames.gameObject);
             }
             else
             {
-                DestroyImmediate(sprite);
+                DestroyImmediate(playerFrames.gameObject);
+            }
+        }
+
+        // TargetFramesのクリア
+        Transform targetFrames = TargetBoardInstance?.transform.Find("TargetFrames");
+        if (targetFrames != null)
+        {
+            if (Application.isPlaying)
+            {
+                Destroy(targetFrames.gameObject);
+            }
+            else
+            {
+                DestroyImmediate(targetFrames.gameObject);
             }
         }
     }
