@@ -168,6 +168,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stageNumber: 1
   TriangleTilePrefab: {fileID: 1792833278517755530, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
+  frameSpritePrefab: {fileID: 8150487019908354066, guid: c937941a9f29388418a0b8e7996178e1, type: 3}
   PlayerBoardInstance: {fileID: 1280167022}
   TargetBoardInstance: {fileID: 1933924399}
   playerTiles: []
@@ -577,7 +578,8 @@ MonoBehaviour:
   menuWindow: {fileID: 7758345166375280699}
   retryButton: {fileID: 473907575}
   backToStageSelectButton: {fileID: 2126570265}
-  closeWindowButton: {fileID: 0}
+  closeWindowButton: {fileID: 656187364}
+  pauseOnMenuShow: 1
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0
@@ -833,6 +835,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 647737236}
   m_CullTransparentMesh: 1
+--- !u!1 &656187364 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4977578006745737937, guid: 365a65d3b06e6294c908c8980a275be8, type: 3}
+  m_PrefabInstance: {fileID: 8890612575000824558}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &656187365 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5808775903102945007, guid: 365a65d3b06e6294c908c8980a275be8, type: 3}

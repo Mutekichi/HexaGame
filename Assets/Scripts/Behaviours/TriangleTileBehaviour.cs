@@ -25,13 +25,20 @@ public class TriangleTileBehaviour : MonoBehaviour
     {
         tileIndex = index;
     }
+    public int GetTileIndex()
+    {
+        return tileIndex;
+    }
     public int TileIndex => tileIndex;
     public float scale;
     public void SetScale(float scale)
     {
         this.scale = scale;
     }
-
+    public float GetScale()
+    {
+        return scale;
+    }
 
     [SerializeField] private bool _isFront = true;
     public bool isFront
