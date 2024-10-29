@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -91,6 +92,11 @@ public class StageManager : MonoBehaviour
         {
             OnPuzzleComplete();
         }
+        else
+        {
+            DebugBitArray(board.boardState, "Current Board State");
+            DebugBitArray(targetPatternBitArray, "Target Pattern");
+        }
     }
     private void CheckIsBoardValid()
     {
@@ -128,7 +134,7 @@ public class StageManager : MonoBehaviour
 
     private void OnPuzzleComplete()
     {
-        // Debug.Log("Puzzle Complete!");
+        Debug.Log("Puzzle Complete!");
     }
 
     public void SetTargetPattern(BitArray pattern)
@@ -139,23 +145,24 @@ public class StageManager : MonoBehaviour
     private void MakeTargetPatternBitArray()
     {
         BitArray __targetPatternBitArray = new BitArray(0);
-        for (int i = 0; i < __targetPatternBitArray.Length; ++i)
+        for (int i = height - 1; i >= 0; i--)
         {
-            if (targetPattern[i] == "0")
+            for (int j = 0; j < width; j++)
             {
-                continue;
-            }
-            else if (targetPattern[i] == "1")
-            {
-                __targetPatternBitArray.Set(i, true);
-            }
-            else if (targetPattern[i] == "2")
-            {
-                __targetPatternBitArray.Set(i, false);
-            }
-            else
-            {
-                Debug.LogError("Invalid target pattern");
+                if (targetPattern[i][j] == '0')
+                {
+                    continue;
+                }
+                else if (targetPattern[i][j] == '1')
+                {
+                    __targetPatternBitArray.Length++;
+                    __targetPatternBitArray[__targetPatternBitArray.Length - 1] = true;
+                }
+                else
+                {
+                    __targetPatternBitArray.Length++;
+                    __targetPatternBitArray[__targetPatternBitArray.Length - 1] = false;
+                }
             }
         }
         targetPatternBitArray = __targetPatternBitArray;
@@ -405,6 +412,37 @@ public class StageManager : MonoBehaviour
             {
                 DestroyImmediate(targetFrames.gameObject);
             }
+        }
+    }
+    public static void DebugBitArray(BitArray bits, string label = null, int groupSize = 8)
+    {
+        if (bits == null)
+        {
+            Debug.Log("BitArray is null");
+            return;
+        }
+
+        var sb = new StringBuilder(bits.Length + (bits.Length / groupSize));
+
+        for (int i = 0; i < bits.Length; i++)
+        {
+            // 1か0を追加
+            sb.Append(bits[i] ? '1' : '0');
+
+            // グループサイズごとにスペースを追加（最後以外）
+            if (i < bits.Length - 1 && (i + 1) % groupSize == 0)
+            {
+                sb.Append(' ');
+            }
+        }
+
+        if (string.IsNullOrEmpty(label))
+        {
+            Debug.Log($"BitArray: {sb}");
+        }
+        else
+        {
+            Debug.Log($"{label}: {sb}");
         }
     }
 }
