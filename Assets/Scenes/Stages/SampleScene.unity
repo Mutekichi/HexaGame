@@ -389,6 +389,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6564117647838594634, guid: f691ec0cd78433c408aeebdbcefb1611, type: 3}
+      propertyPath: targetPattern.Array.data[0]
+      value: 0211110
+      objectReference: {fileID: 0}
     - target: {fileID: 6985288247353389284, guid: f691ec0cd78433c408aeebdbcefb1611, type: 3}
       propertyPath: m_Name
       value: CommonStageComponents
