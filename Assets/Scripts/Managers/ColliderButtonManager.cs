@@ -3,8 +3,8 @@ using UnityEngine.SceneManagement;
 
 public class ColliderButtonManager : MonoBehaviour
 {
-    [SerializeField] private string sceneToLoad;  // インスペクターで設定するシーン名
-    private PolygonCollider2D polygonCollider;    // アタッチされているPolygonCollider2D
+    [SerializeField] private string sceneToLoad;
+    private PolygonCollider2D polygonCollider;
 
     private void Start()
     {

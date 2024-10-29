@@ -25,13 +25,20 @@ public class TriangleTileBehaviour : MonoBehaviour
     {
         tileIndex = index;
     }
+    public int GetTileIndex()
+    {
+        return tileIndex;
+    }
     public int TileIndex => tileIndex;
     public float scale;
     public void SetScale(float scale)
     {
         this.scale = scale;
     }
-
+    public float GetScale()
+    {
+        return scale;
+    }
 
     [SerializeField] private bool _isFront = true;
     public bool isFront
@@ -118,6 +125,10 @@ public class TriangleTileBehaviour : MonoBehaviour
 
     private void CheckForClick()
     {
+        if (GameUIManager.IsMenuVisible())
+        {
+            return;
+        }
         if (Input.GetMouseButtonDown(0))
         {
             Vector2 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
@@ -197,7 +208,6 @@ public class TriangleTileBehaviour : MonoBehaviour
             if (tileIndex != -1 && stageManager != null)
             {
                 stageManager.playerBoard.SetTileState(tileIndex, isFront);
-                // フリップ完了時に盤面の状態変化を通知
                 OnBoardStateChanged?.Invoke(stageManager.playerBoard);
             }
         }
@@ -226,10 +236,8 @@ public class TriangleTileBehaviour : MonoBehaviour
     {
         if (tileIndex == -1 || stageManager == null) return;
 
-        // 現在のタイルの隣接情報を取得
         StageLogic.Tile currentTile = stageManager.playerBoard.tiles[tileIndex];
 
-        // 隣接タイルをフリップ
         foreach (int neighborIndex in currentTile.neighbors)
         {
             if (neighborIndex != -1 && neighborIndex < stageManager.playerTiles.Count)
