@@ -43,3 +43,6 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: MenuWindow
+    uniqueID: 797795501
+    locked: 0
