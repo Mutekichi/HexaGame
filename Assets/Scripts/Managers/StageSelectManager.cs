@@ -139,7 +139,7 @@ public class StageSelectManager : MonoBehaviour
     private void LoadStage(int stageId)
     {
         StageDataManager.Instance.SetCurrentStage(stageId);
-        SceneManager.LoadScene("TimeAttackSceneTemplate");
+        SceneManager.LoadScene("NormalStage");
     }
 
     private void OnDestroy()
