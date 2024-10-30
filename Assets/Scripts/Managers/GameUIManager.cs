@@ -1,4 +1,3 @@
-// GameUIManager.cs
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -13,6 +12,12 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private GameObject retryButton;
     [SerializeField] private GameObject backToStageSelectButton;
     [SerializeField] private GameObject closeWindowButton;
+    [SerializeField] private GameObject stageClearWindow;
+    [SerializeField] private GameObject Stars3;
+    [SerializeField] private GameObject Stars2;
+    [SerializeField] private GameObject Stars1;
+    [SerializeField] private GameObject retryButtonOnStageClearWindow;
+    [SerializeField] private GameObject backToStageSelectButtonOnStageClearWindow;
 
     [Header("Settings")]
     [SerializeField] private bool pauseOnMenuShow = true;
@@ -21,6 +26,8 @@ public class GameUIManager : MonoBehaviour
     private ICustomButton retryButtonInterface;
     private ICustomButton backToStageSelectButtonInterface;
     private ICustomButton closeWindowButtonInterface;
+    private ICustomButton retryButtonOnStageClearInterface;
+    private ICustomButton backToStageSelectButtonOnStageClearInterface;
 
     private void Awake()
     {
@@ -40,6 +47,8 @@ public class GameUIManager : MonoBehaviour
         retryButtonInterface = GetButtonInterface(retryButton);
         backToStageSelectButtonInterface = GetButtonInterface(backToStageSelectButton);
         closeWindowButtonInterface = GetButtonInterface(closeWindowButton);
+        retryButtonOnStageClearInterface = GetButtonInterface(retryButtonOnStageClearWindow);
+        backToStageSelectButtonOnStageClearInterface = GetButtonInterface(backToStageSelectButtonOnStageClearWindow);
     }
 
     private ICustomButton GetButtonInterface(GameObject buttonObject)
@@ -65,7 +74,7 @@ public class GameUIManager : MonoBehaviour
         return (ICustomButton)standardWrapper ?? triangleWrapper;
     }
 
-    public static bool IsMenuVisible() => instance != null && instance.IsMenuWindowVisible();
+    public static bool IsMenuVisible() => instance != null && (instance.IsMenuWindowVisible() || instance.IsStageClearWindowVisible());
 
     private void Start()
     {
@@ -80,10 +89,17 @@ public class GameUIManager : MonoBehaviour
             menuWindow.SetActive(false);
         }
 
+        if (stageClearWindow != null)
+        {
+            stageClearWindow.SetActive(false);
+        }
+
         SetupButtonIfExists(hamburgerMenuButtonInterface);
         SetupButtonIfExists(retryButtonInterface);
         SetupButtonIfExists(backToStageSelectButtonInterface);
         SetupButtonIfExists(closeWindowButtonInterface);
+        SetupButtonIfExists(retryButtonOnStageClearInterface);
+        SetupButtonIfExists(backToStageSelectButtonOnStageClearInterface);
     }
 
     private void SetupButtonIfExists(ICustomButton button)
@@ -92,36 +108,83 @@ public class GameUIManager : MonoBehaviour
         {
             button.interactable = true;
         }
+        else if (button == null)
+        {
+            Debug.LogWarning("Button is not set up correctly.");
+        }
     }
 
     private void SetupButtons()
     {
-        if (hamburgerMenuButtonInterface != null)
-        {
-            hamburgerMenuButtonInterface.onClick.AddListener(ShowMenuWindow);
-        }
+        hamburgerMenuButtonInterface?.onClick.AddListener(ShowMenuWindow);
 
-        if (retryButtonInterface != null)
+        retryButtonInterface?.onClick.AddListener(() =>
         {
-            retryButtonInterface.onClick.AddListener(() =>
+            HideMenuWindow();
+            OnRetryButtonClicked();
+        });
+
+        backToStageSelectButtonInterface?.onClick.AddListener(() =>
+        {
+            HideMenuWindow();
+            OnBackToStageSelectButtonClicked();
+        });
+
+        closeWindowButtonInterface?.onClick.AddListener(HideMenuWindow);
+
+        retryButtonOnStageClearInterface?.onClick.AddListener(() =>
+        {
+            Debug.Log("Retry button on Stage Clear clicked");
+            HideStageClearWindow();
+            OnRetryButtonClicked();
+        });
+
+        backToStageSelectButtonOnStageClearInterface?.onClick.AddListener(() =>
+        {
+            Debug.Log("Back to stage select button clicked");
+            HideStageClearWindow();
+            OnBackToStageSelectButtonClicked();
+        });
+    }
+
+    public void ShowStageClearWindow(int stars)
+    {
+        if (stageClearWindow != null)
+        {
+            stageClearWindow.SetActive(true);
+
+            stars = Mathf.Clamp(stars, 1, 3);
+
+            if (Stars1 != null) Stars1.SetActive(stars == 1);
+            if (Stars2 != null) Stars2.SetActive(stars == 2);
+            if (Stars3 != null) Stars3.SetActive(stars == 3);
+
+            if (retryButtonOnStageClearInterface != null)
             {
-                HideMenuWindow();
-                OnRetryButtonClicked();
-            });
-        }
+                retryButtonOnStageClearInterface.interactable = true;
+            }
 
-        if (backToStageSelectButtonInterface != null)
-        {
-            backToStageSelectButtonInterface.onClick.AddListener(() =>
+            if (backToStageSelectButtonOnStageClearInterface != null)
             {
-                HideMenuWindow();
-                OnBackToStageSelectButtonClicked();
-            });
-        }
+                backToStageSelectButtonOnStageClearInterface.interactable = true;
+            }
 
-        if (closeWindowButtonInterface != null)
+            if (pauseOnMenuShow)
+            {
+                PauseGame();
+            }
+        }
+    }
+
+    private void HideStageClearWindow()
+    {
+        if (stageClearWindow != null)
         {
-            closeWindowButtonInterface.onClick.AddListener(HideMenuWindow);
+            stageClearWindow.SetActive(false);
+            if (pauseOnMenuShow)
+            {
+                ResumeGame();
+            }
         }
     }
 
@@ -182,12 +245,19 @@ public class GameUIManager : MonoBehaviour
         return menuWindow != null && menuWindow.activeSelf;
     }
 
+    public bool IsStageClearWindowVisible()
+    {
+        return stageClearWindow != null && stageClearWindow.activeSelf;
+    }
+
     private void OnDestroy()
     {
         CleanupButtonListeners(hamburgerMenuButtonInterface);
         CleanupButtonListeners(retryButtonInterface);
         CleanupButtonListeners(backToStageSelectButtonInterface);
         CleanupButtonListeners(closeWindowButtonInterface);
+        CleanupButtonListeners(retryButtonOnStageClearInterface);
+        CleanupButtonListeners(backToStageSelectButtonOnStageClearInterface);
     }
 
     private void CleanupButtonListeners(ICustomButton button)
@@ -206,7 +276,7 @@ public class GameUIManager : MonoBehaviour
             {
                 HideMenuWindow();
             }
-            else
+            else if (!IsStageClearWindowVisible()) // ステージクリアウィンドウが表示されていない場合のみメニューを表示
             {
                 ShowMenuWindow();
             }

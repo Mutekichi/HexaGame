@@ -1,28 +1,47 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
-using UnityEngine.UIElements;
+using static TriangleTileBehaviour;
 
 public class StageManager : MonoBehaviour
 {
-    public int stageNumber;
+    [Header("Prefabs")]
     [SerializeField] GameObject TriangleTilePrefab;
     [SerializeField] private GameObject frameSpritePrefab;
-    public GameObject PlayerBoardInstance;
-    public GameObject TargetBoardInstance;
 
-    [HideInInspector]
-    public StageLogic.Board playerBoard;
+    [Header("Texts")]
+    [SerializeField] private GameObject targetSteps1;
+    [SerializeField] private GameObject targetSteps2;
+    [SerializeField] private GameObject targetSteps3;
+    [SerializeField] private GameObject currentSteps;
 
-    [HideInInspector]
-    public List<GameObject> playerTiles;
+    [Header("Boards")]
+    [SerializeField] private GameObject PlayerBoardInstance;
+    [SerializeField] private GameObject TargetBoardInstance;
+    [Header("Steps")]
+    public int steps3 = 13;
+    public int steps2 = 50;
+
+    [Header("Properties")]
+    [SerializeField] private int playerBoardSize = 11;
+    [SerializeField] private int targetBoardSize = 6;
     [SerializeField] private int height;
     [SerializeField] private int width;
+    [SerializeField] private int maxSteps = 999;
     [SerializeField] private bool isTopLeftTriangleDownward;
     [SerializeField] private string[] initialPattern;
     [SerializeField] private string[] targetPattern;
+
+    [HideInInspector] public StageLogic.Board playerBoard;
+    [HideInInspector] public List<GameObject> playerTiles;
+    private GameUIManager gameUIManager;
+
     private BitArray targetPatternBitArray;
+    private static readonly float distanceBetweenTileCenters = 2 / Mathf.Sqrt(3);
+    private bool IsPuzzleComplete { get; set; } = false;
+    private int steps = 0;
 
     private enum EdgeDirectionBetweenTiles
     {
@@ -59,7 +78,6 @@ public class StageManager : MonoBehaviour
         {EdgeDirectionBetweenTiles.DownLeft, -150},
         {EdgeDirectionBetweenTiles.UpLeft, 150}
     };
-    private static readonly float distanceBetweenTileCenters = 2 / Mathf.Sqrt(3);
 
     private class BoardScaleInfo
     {
@@ -77,6 +95,8 @@ public class StageManager : MonoBehaviour
     {
         CheckIsBoardValid();
         MakeTargetPatternBitArray();
+        ShowTexts();
+        InitializeGameUIManager();
         Test();
         TriangleTileBehaviour.OnBoardStateChanged += CheckBoardState;
     }
@@ -86,6 +106,61 @@ public class StageManager : MonoBehaviour
         TriangleTileBehaviour.OnBoardStateChanged -= CheckBoardState;
     }
 
+    public static void OnClickTile(int tileIndex)
+    {
+        if (tileIndex == -1) return;
+
+        IncrementSteps();
+
+        StageManager stageManager = FindObjectOfType<StageManager>();
+        if (stageManager == null || stageManager.playerBoard == null || stageManager.playerTiles == null) return;
+
+        if (CheckAllNeighborsNotFlipping(tileIndex))
+        {
+            StageLogic.Tile currentTile = stageManager.playerBoard.tiles[tileIndex];
+            foreach (int neighborIndex in currentTile.neighbors)
+            {
+                if (neighborIndex != -1 && neighborIndex < stageManager.playerTiles.Count)
+                {
+                    GameObject neighborObject = stageManager.playerTiles[neighborIndex];
+                    TriangleTileBehaviour neighborTile = neighborObject.GetComponent<TriangleTileBehaviour>();
+                    if (neighborTile != null)
+                    {
+                        neighborTile.StartFlip();
+                    }
+                }
+            }
+        }
+    }
+
+    private static bool CheckAllNeighborsNotFlipping(int tileIndex)
+    {
+        StageManager stageManager = FindObjectOfType<StageManager>();
+        if (stageManager == null || stageManager.playerBoard == null) return false;
+
+        StageLogic.Tile currentTile = stageManager.playerBoard.tiles[tileIndex];
+        foreach (int neighborIndex in currentTile.neighbors)
+        {
+            if (neighborIndex != -1 && neighborIndex < stageManager.playerTiles.Count)
+            {
+                GameObject neighborObject = stageManager.playerTiles[neighborIndex];
+                TriangleTileBehaviour neighborTile = neighborObject.GetComponent<TriangleTileBehaviour>();
+                if (neighborTile != null && neighborTile.flipState != FlipState.NotFlipping)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    private void InitializeGameUIManager()
+    {
+        gameUIManager = FindObjectOfType<GameUIManager>();
+        if (gameUIManager == null)
+        {
+            Debug.LogError("GameUIManager not found");
+        }
+    }
     private void CheckBoardState(StageLogic.Board board)
     {
         if (board.MatchesPattern(targetPatternBitArray))
@@ -98,6 +173,7 @@ public class StageManager : MonoBehaviour
             DebugBitArray(targetPatternBitArray, "Target Pattern");
         }
     }
+
     private void CheckIsBoardValid()
     {
         if (initialPattern.Length != height)
@@ -132,70 +208,29 @@ public class StageManager : MonoBehaviour
         }
     }
 
-    private void OnPuzzleComplete()
-    {
-        Debug.Log("Puzzle Complete!");
-    }
-
-    public void SetTargetPattern(BitArray pattern)
-    {
-        targetPatternBitArray = pattern;
-    }
-
-    private void MakeTargetPatternBitArray()
-    {
-        BitArray __targetPatternBitArray = new BitArray(0);
-        for (int i = height - 1; i >= 0; i--)
-        {
-            for (int j = 0; j < width; j++)
-            {
-                if (targetPattern[i][j] == '0')
-                {
-                    continue;
-                }
-                else if (targetPattern[i][j] == '1')
-                {
-                    __targetPatternBitArray.Length++;
-                    __targetPatternBitArray[__targetPatternBitArray.Length - 1] = true;
-                }
-                else
-                {
-                    __targetPatternBitArray.Length++;
-                    __targetPatternBitArray[__targetPatternBitArray.Length - 1] = false;
-                }
-            }
-        }
-        targetPatternBitArray = __targetPatternBitArray;
-    }
     private void Test()
     {
         StageLogic.CellExpression playerBoardCellExpression = new StageLogic.CellExpression(
             height,
             width,
             isTopLeftTriangleDownward,
-            StageLogic.GetCellStateStringsFromStringExpression(
-                initialPattern,
-                height,
-                width
-            )
+            StageLogic.GetCellStateStringsFromStringExpression(initialPattern, height, width)
         );
+
         StageLogic.CellExpression targetBoardCellExpression = new StageLogic.CellExpression(
             height,
             width,
             isTopLeftTriangleDownward,
-            StageLogic.GetCellStateStringsFromStringExpression(
-                targetPattern,
-                height,
-                width
-            )
+            StageLogic.GetCellStateStringsFromStringExpression(targetPattern, height, width)
         );
-        PlaceBoardFromCellExpression(targetBoardCellExpression, new Vector3(0, 0, 0), 6f, 6f, TargetBoardInstance);
-        playerTiles = PlaceBoardFromCellExpression(playerBoardCellExpression, new Vector3(0, 0, 0), 12f, 12f, PlayerBoardInstance);
+
+        PlaceBoardFromCellExpression(targetBoardCellExpression, new Vector3(0, 0, 0), targetBoardSize, targetBoardSize, TargetBoardInstance, false);
+        playerTiles = PlaceBoardFromCellExpression(playerBoardCellExpression, new Vector3(0, 0, 0), playerBoardSize, playerBoardSize, PlayerBoardInstance, true);
         playerBoard = StageLogic.CellExpression.GenerateBoard(playerBoardCellExpression);
         GenerateFrame();
     }
 
-    private List<GameObject> PlaceBoardFromCellExpression(StageLogic.CellExpression cellExpression, Vector3 center, float height, float width, GameObject objectToAttach = null)
+    private List<GameObject> PlaceBoardFromCellExpression(StageLogic.CellExpression cellExpression, Vector3 center, float height, float width, GameObject objectToAttach, bool isTileClickable = true)
     {
         List<GameObject> tiles = new List<GameObject>();
         float boardWidthByTileUnit = cellExpression.width * 0.5f + 0.5f;
@@ -208,10 +243,7 @@ public class StageManager : MonoBehaviour
         {
             for (int iw = 0; iw < cellExpression.width; ++iw)
             {
-                if (cellExpression.cells[ih, iw] == StageLogic.CellState.Empty)
-                {
-                    continue;
-                }
+                if (cellExpression.cells[ih, iw] == StageLogic.CellState.Empty) continue;
 
                 Vector3 offset = new Vector3(-width, -height, 0) / 2f + scaleInfo.origin;
                 bool isDownwardTile = StageLogic.IsDownwardTileFromIndex(ih, iw, cellExpression.isTopLeftTriangleDownward);
@@ -225,7 +257,8 @@ public class StageManager : MonoBehaviour
                     !isDownwardTile,
                     cellExpression.cells[ih, iw] == StageLogic.CellState.Front,
                     tileIndex++,
-                    objectToAttach
+                    objectToAttach,
+                    isTileClickable
                 );
                 tiles.Add(tile);
             }
@@ -233,7 +266,7 @@ public class StageManager : MonoBehaviour
         return tiles;
     }
 
-    private GameObject PlaceTriangleTile(Vector3 position, float scale, bool isUpward, bool isFront, int tileIndex, GameObject objectToAttach = null)
+    private GameObject PlaceTriangleTile(Vector3 position, float scale, bool isUpward, bool isFront, int tileIndex, GameObject objectToAttach, bool isTileClickable)
     {
         GameObject triangleTile = Instantiate(TriangleTilePrefab, objectToAttach != null ? objectToAttach.transform : PlayerBoardInstance.transform);
         triangleTile.transform.localPosition = position;
@@ -246,14 +279,13 @@ public class StageManager : MonoBehaviour
             tileBehaviour.isFront = isFront;
             tileBehaviour.SetTileIndex(tileIndex);
             tileBehaviour.SetScale(scale);
+            tileBehaviour.IsClickable = isTileClickable;
         }
         return triangleTile;
     }
 
     private static BoardScaleInfo GetBoardScaleAndOrigin(float boardWidthByTileUnit, float boardHeightByTileUnit, float maxBoardWidth, float maxBoardHeight)
     {
-        // Debug.Log($"Board width by tile unit: {boardWidthByTileUnit}, board height by tile unit: {boardHeightByTileUnit}");
-
         if (boardWidthByTileUnit / boardHeightByTileUnit > maxBoardWidth / maxBoardHeight)
         {
             float tileUnit = maxBoardWidth / boardWidthByTileUnit;
@@ -275,87 +307,86 @@ public class StageManager : MonoBehaviour
     private void GenerateFrame()
     {
         if (PlayerBoardInstance == null || TargetBoardInstance == null) return;
-
         ClearBorders();
+        GeneratePlayerBoardFrame();
+        GenerateTargetBoardFrame();
+    }
+    private void GeneratePlayerBoardFrame()
+    {
+        if (playerBoard == null || playerTiles == null) return;
 
-        // Player Board用のフレーム生成
-        if (playerBoard != null && playerTiles != null)
+        Dictionary<int, GameObject> tileIndexToGameObject = new Dictionary<int, GameObject>();
+        for (int i = 0; i < playerTiles.Count; i++)
         {
-            Dictionary<int, GameObject> tileIndexToGameObject = new Dictionary<int, GameObject>();
-            for (int i = 0; i < playerTiles.Count; i++)
-            {
-                var tileBehaviour = playerTiles[i].GetComponent<TriangleTileBehaviour>();
-                tileIndexToGameObject[tileBehaviour.GetTileIndex()] = playerTiles[i];
-            }
-
-            foreach (StageLogic.Tile tile in playerBoard.tiles)
-            {
-                if (!tileIndexToGameObject.TryGetValue(tile.index, out GameObject tileObject)) continue;
-
-                Vector3 center = tileObject.transform.position;
-                float scale = tileObject.GetComponent<TriangleTileBehaviour>().GetScale();
-
-                foreach (EdgeDirectionBetweenTiles direction in tileFacingUpToDirections[tile.isUpward])
-                {
-                    bool isOuterEdge = IsOuterEdge(tile, direction);
-
-                    PlaceBorderSprite(
-                        center + unitEdgeDirectionToVector[direction] * distanceBetweenTileCenters * scale / 2,
-                        edgeDirectionToAngle[direction],
-                        scale,
-                        isOuterEdge ? 1f : 0.4f,
-                        PlayerBoardInstance
-                    );
-                }
-            }
+            var tileBehaviour = playerTiles[i].GetComponent<TriangleTileBehaviour>();
+            tileIndexToGameObject[tileBehaviour.GetTileIndex()] = playerTiles[i];
         }
 
-        // Target Board用のフレーム生成
-        if (playerBoard != null)  // playerBoardの構造を使用
+        foreach (StageLogic.Tile tile in playerBoard.tiles)
         {
-            var targetTiles = new List<GameObject>();
-            for (int i = 0; i < TargetBoardInstance.transform.childCount; i++)
+            if (!tileIndexToGameObject.TryGetValue(tile.index, out GameObject tileObject)) continue;
+
+            Vector3 center = tileObject.transform.position;
+            float scale = tileObject.GetComponent<TriangleTileBehaviour>().GetScale();
+
+            foreach (EdgeDirectionBetweenTiles direction in tileFacingUpToDirections[tile.isUpward])
             {
-                targetTiles.Add(TargetBoardInstance.transform.GetChild(i).gameObject);
-            }
-
-            Dictionary<int, GameObject> tileIndexToGameObject = new Dictionary<int, GameObject>();
-            for (int i = 0; i < targetTiles.Count; i++)
-            {
-                var tileBehaviour = targetTiles[i].GetComponent<TriangleTileBehaviour>();
-                tileIndexToGameObject[tileBehaviour.GetTileIndex()] = targetTiles[i];
-            }
-
-            foreach (StageLogic.Tile tile in playerBoard.tiles)
-            {
-                if (!tileIndexToGameObject.TryGetValue(tile.index, out GameObject tileObject)) continue;
-
-                Vector3 center = tileObject.transform.position;
-                float scale = tileObject.GetComponent<TriangleTileBehaviour>().GetScale();
-
-                foreach (EdgeDirectionBetweenTiles direction in tileFacingUpToDirections[tile.isUpward])
-                {
-                    bool isOuterEdge = IsOuterEdge(tile, direction);
-
-                    PlaceBorderSprite(
-                        center + unitEdgeDirectionToVector[direction] * distanceBetweenTileCenters * scale / 2,
-                        edgeDirectionToAngle[direction],
-                        scale,
-                        isOuterEdge ? 1f : 0.4f,
-                        TargetBoardInstance
-                    );
-                }
+                bool isOuterEdge = IsOuterEdge(tile, direction);
+                PlaceBorderSprite(
+                    center + unitEdgeDirectionToVector[direction] * distanceBetweenTileCenters * scale / 2,
+                    edgeDirectionToAngle[direction],
+                    scale,
+                    isOuterEdge ? 1f : 0.4f,
+                    PlayerBoardInstance
+                );
             }
         }
     }
+    private void GenerateTargetBoardFrame()
+    {
+        if (playerBoard == null) return;
+
+        var targetTiles = new List<GameObject>();
+        for (int i = 0; i < TargetBoardInstance.transform.childCount; i++)
+        {
+            targetTiles.Add(TargetBoardInstance.transform.GetChild(i).gameObject);
+        }
+
+        Dictionary<int, GameObject> tileIndexToGameObject = new Dictionary<int, GameObject>();
+        for (int i = 0; i < targetTiles.Count; i++)
+        {
+            var tileBehaviour = targetTiles[i].GetComponent<TriangleTileBehaviour>();
+            tileIndexToGameObject[tileBehaviour.GetTileIndex()] = targetTiles[i];
+        }
+
+        foreach (StageLogic.Tile tile in playerBoard.tiles)
+        {
+            if (!tileIndexToGameObject.TryGetValue(tile.index, out GameObject tileObject)) continue;
+
+            Vector3 center = tileObject.transform.position;
+            float scale = tileObject.GetComponent<TriangleTileBehaviour>().GetScale();
+
+            foreach (EdgeDirectionBetweenTiles direction in tileFacingUpToDirections[tile.isUpward])
+            {
+                bool isOuterEdge = IsOuterEdge(tile, direction);
+                PlaceBorderSprite(
+                    center + unitEdgeDirectionToVector[direction] * distanceBetweenTileCenters * scale / 2,
+                    edgeDirectionToAngle[direction],
+                    scale,
+                    isOuterEdge ? 1f : 0.4f,
+                    TargetBoardInstance
+                );
+            }
+        }
+    }
+
     private bool IsOuterEdge(StageLogic.Tile tile, EdgeDirectionBetweenTiles direction)
     {
-        // neighborのインデックスを取得
         int neighborIndex = direction switch
         {
-            EdgeDirectionBetweenTiles.UpRight or EdgeDirectionBetweenTiles.DownRight => tile.neighbors[0],  // 右
-            EdgeDirectionBetweenTiles.UpLeft or EdgeDirectionBetweenTiles.DownLeft => tile.neighbors[1],    // 左
-            EdgeDirectionBetweenTiles.Up or EdgeDirectionBetweenTiles.Down => tile.neighbors[2],            // 上/下
+            EdgeDirectionBetweenTiles.UpRight or EdgeDirectionBetweenTiles.DownRight => tile.neighbors[0],
+            EdgeDirectionBetweenTiles.UpLeft or EdgeDirectionBetweenTiles.DownLeft => tile.neighbors[1],
+            EdgeDirectionBetweenTiles.Up or EdgeDirectionBetweenTiles.Down => tile.neighbors[2],
             _ => -1
         };
 
@@ -366,6 +397,7 @@ public class StageManager : MonoBehaviour
     {
         string framesName = objectToAttach == PlayerBoardInstance ? "PlayerFrames" : "TargetFrames";
         Transform framesParent = objectToAttach.transform.Find(framesName);
+
         if (framesParent == null)
         {
             var framesObject = new GameObject(framesName);
@@ -386,7 +418,6 @@ public class StageManager : MonoBehaviour
 
     private void ClearBorders()
     {
-        // PlayerFramesのクリア
         Transform playerFrames = PlayerBoardInstance?.transform.Find("PlayerFrames");
         if (playerFrames != null)
         {
@@ -400,7 +431,6 @@ public class StageManager : MonoBehaviour
             }
         }
 
-        // TargetFramesのクリア
         Transform targetFrames = TargetBoardInstance?.transform.Find("TargetFrames");
         if (targetFrames != null)
         {
@@ -414,6 +444,65 @@ public class StageManager : MonoBehaviour
             }
         }
     }
+
+    private void ShowTexts()
+    {
+        targetSteps3.GetComponent<UnityEngine.UI.Text>().text = steps3.ToString();
+        targetSteps2.GetComponent<UnityEngine.UI.Text>().text = steps2.ToString();
+        targetSteps1.GetComponent<UnityEngine.UI.Text>().text = "∞";
+    }
+
+    private void OnPuzzleComplete()
+    {
+        if (IsPuzzleComplete) return;
+        IsPuzzleComplete = true;
+        if (steps <= steps3)
+        {
+            gameUIManager.ShowStageClearWindow(3);
+        }
+        else if (steps <= steps2)
+        {
+            gameUIManager.ShowStageClearWindow(2);
+        }
+        else
+        {
+            gameUIManager.ShowStageClearWindow(1);
+        }
+    }
+
+    private static void IncrementSteps()
+    {
+        StageManager stageManager = FindObjectOfType<StageManager>();
+        if (stageManager == null) return;
+
+        if (stageManager.steps < stageManager.maxSteps)
+        {
+            stageManager.steps++;
+        }
+        stageManager.currentSteps.GetComponent<UnityEngine.UI.Text>().text = "steps: " + stageManager.steps;
+    }
+
+    public void SetTargetPattern(BitArray pattern)
+    {
+        targetPatternBitArray = pattern;
+    }
+
+    private void MakeTargetPatternBitArray()
+    {
+        BitArray __targetPatternBitArray = new BitArray(0);
+        for (int i = height - 1; i >= 0; i--)
+        {
+            for (int j = 0; j < width; j++)
+            {
+                if (targetPattern[i][j] == '0') continue;
+
+                __targetPatternBitArray.Length++;
+                __targetPatternBitArray[__targetPatternBitArray.Length - 1] = targetPattern[i][j] == '1';
+            }
+        }
+        targetPatternBitArray = __targetPatternBitArray;
+    }
+
     public static void DebugBitArray(BitArray bits, string label = null, int groupSize = 8)
     {
         if (bits == null)
@@ -423,13 +512,9 @@ public class StageManager : MonoBehaviour
         }
 
         var sb = new StringBuilder(bits.Length + (bits.Length / groupSize));
-
         for (int i = 0; i < bits.Length; i++)
         {
-            // 1か0を追加
             sb.Append(bits[i] ? '1' : '0');
-
-            // グループサイズごとにスペースを追加（最後以外）
             if (i < bits.Length - 1 && (i + 1) % groupSize == 0)
             {
                 sb.Append(' ');

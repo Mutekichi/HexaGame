@@ -10,7 +10,6 @@ public class MainMenuManager : MonoBehaviour
 
     private void Start()
     {
-        // ボタンが割り当てられているか確認
         if (stageSelectButton == null)
         {
             Debug.LogError("StageSelectButton is not assigned!");
@@ -23,7 +22,6 @@ public class MainMenuManager : MonoBehaviour
             return;
         }
 
-        // ボタンにリスナーを追加
         stageSelectButton.onClick.AddListener(OnStageSelectButtonClicked);
         timeAttackButton.onClick.AddListener(OnTimeAttackButtonClicked);
     }
