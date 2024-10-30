@@ -1,3 +1,4 @@
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 public class TriangleTileBehaviour : MonoBehaviour
@@ -73,6 +74,7 @@ public class TriangleTileBehaviour : MonoBehaviour
     private float flipProgress;
     public FlipState flipState { get; private set; } = FlipState.NotFlipping;
     private Collider2D tileCollider { get { return isUpward ? upwardCollider : downwardCollider; } }
+
     private StageManager stageManager;
 
     private void OnEnable()
@@ -134,7 +136,7 @@ public class TriangleTileBehaviour : MonoBehaviour
             if (IsClickedOnTile(mousePosition))
             {
                 Debug.Log("tile" + tileIndex + " clicked");
-                StageManager.OnClickTile(tileIndex);
+                stageManager.OnClickTile(tileIndex);
             }
         }
     }

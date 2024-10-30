@@ -1816,28 +1816,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 1821840492559178570}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4feb899414de76248bae85ce98ec6b5f, type: 3}
+  m_Script: {fileID: 11500000, guid: f22953ca63a0f734c86ce1f338862b76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stageNumber: 1
   TriangleTilePrefab: {fileID: 1792833278517755530, guid: ee4b7ce18efaaaf4b95c9e4967360233, type: 3}
   frameSpritePrefab: {fileID: 8150487019908354066, guid: c937941a9f29388418a0b8e7996178e1, type: 3}
-  PlayerBoardInstance: {fileID: 3353368580524885922}
-  TargetBoardInstance: {fileID: 5040008446564551124}
+  targetSteps1: {fileID: 0}
+  targetSteps2: {fileID: 0}
+  targetSteps3: {fileID: 0}
+  currentSteps: {fileID: 0}
+  PlayerBoardInstance: {fileID: 0}
+  TargetBoardInstance: {fileID: 0}
   playerTiles: []
-  height: 4
-  width: 7
-  isTopLeftTriangleDownward: 1
-  initialPattern:
-  - 0212120
-  - 2121212
-  - 1212121
-  - 0000010
-  targetPattern:
-  - 0211110
-  - 1111111
-  - 1111111
-  - 0000010
 --- !u!1 &8236693406960169456
 GameObject:
   m_ObjectHideFlags: 0
@@ -2050,6 +2040,12 @@ MonoBehaviour:
   retryButton: {fileID: 8236693406960169456}
   backToStageSelectButton: {fileID: 4977578006136798907}
   closeWindowButton: {fileID: 4451562775625225935}
+  stageClearWindow: {fileID: 0}
+  Stars3: {fileID: 0}
+  Stars2: {fileID: 0}
+  Stars1: {fileID: 0}
+  retryButtonOnStageClearWindow: {fileID: 0}
+  backToStageSelectButtonOnStageClearWindow: {fileID: 0}
   pauseOnMenuShow: 1
 --- !u!4 &8798282192979727609
 Transform:

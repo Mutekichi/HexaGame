@@ -20,29 +20,17 @@ public class StageManager : MonoBehaviour
     [Header("Boards")]
     [SerializeField] private GameObject PlayerBoardInstance;
     [SerializeField] private GameObject TargetBoardInstance;
-    [Header("Steps")]
-    public int steps3 = 13;
-    public int steps2 = 50;
-
-    [Header("Properties")]
-    [SerializeField] private int playerBoardSize = 11;
-    [SerializeField] private int targetBoardSize = 6;
-    [SerializeField] private int height;
-    [SerializeField] private int width;
-    [SerializeField] private int maxSteps = 999;
-    [SerializeField] private bool isTopLeftTriangleDownward;
-    [SerializeField] private string[] initialPattern;
-    [SerializeField] private string[] targetPattern;
-
-    [HideInInspector] public StageLogic.Board playerBoard;
-    [HideInInspector] public List<GameObject> playerTiles;
+    private StageData currentStageData;
     private GameUIManager gameUIManager;
-
+    public StageLogic.Board playerBoard;
+    public List<GameObject> playerTiles;
     private BitArray targetPatternBitArray;
-    private static readonly float distanceBetweenTileCenters = 2 / Mathf.Sqrt(3);
     private bool IsPuzzleComplete { get; set; } = false;
+    private static readonly float distanceBetweenTileCenters = 2 / Mathf.Sqrt(3);
+    private static readonly float targetBoardSize = 6;
+    private static readonly float playerBoardSize = 12;
+    private int maxSteps = 999;
     private int steps = 0;
-
     private enum EdgeDirectionBetweenTiles
     {
         Up,
@@ -93,11 +81,22 @@ public class StageManager : MonoBehaviour
 
     void Start()
     {
+        InitializeStage();
+    }
+    void InitializeStage()
+    {
+        currentStageData = StageDataManager.Instance.GetCurrentStageData();
+        if (currentStageData == null)
+        {
+            Debug.LogError("Stage data is null");
+            return;
+        }
         CheckIsBoardValid();
         MakeTargetPatternBitArray();
         ShowTexts();
         InitializeGameUIManager();
-        Test();
+        InitializeBoard();
+
         TriangleTileBehaviour.OnBoardStateChanged += CheckBoardState;
     }
 
@@ -106,7 +105,7 @@ public class StageManager : MonoBehaviour
         TriangleTileBehaviour.OnBoardStateChanged -= CheckBoardState;
     }
 
-    public static void OnClickTile(int tileIndex)
+    public void OnClickTile(int tileIndex)
     {
         if (tileIndex == -1) return;
 
@@ -170,37 +169,37 @@ public class StageManager : MonoBehaviour
         else
         {
             DebugBitArray(board.boardState, "Current Board State");
-            DebugBitArray(targetPatternBitArray, "Target Pattern");
+
         }
     }
 
     private void CheckIsBoardValid()
     {
-        if (initialPattern.Length != height)
+        if (currentStageData.initialPattern.Length != currentStageData.height)
         {
-            Debug.LogError("Invalid height of initial pattern");
+            Debug.LogError("Invalid currentStageData.height of initial pattern");
         }
-        for (int i = 0; i < height; i++)
+        for (int i = 0; i < currentStageData.height; i++)
         {
-            if (initialPattern[i].Length != width)
+            if (currentStageData.initialPattern[i].Length != currentStageData.width)
             {
-                Debug.LogError("Invalid width of initial pattern");
+                Debug.LogError("Invalid currentStageData.width of initial pattern");
             }
         }
-        for (int i = 0; i < height; ++i)
+        for (int i = 0; i < currentStageData.height; ++i)
         {
-            for (int j = 0; j < width; ++j)
+            for (int j = 0; j < currentStageData.width; ++j)
             {
-                if (initialPattern[i][j] != '0' && initialPattern[i][j] != '1' && initialPattern[i][j] != '2')
+                if (currentStageData.initialPattern[i][j] != '0' && currentStageData.initialPattern[i][j] != '1' && currentStageData.initialPattern[i][j] != '2')
                 {
                     Debug.LogError("Invalid initial pattern");
                 }
-                if (targetPattern[i][j] != '0' && targetPattern[i][j] != '1' && targetPattern[i][j] != '2')
+                if (currentStageData.targetPattern[i][j] != '0' && currentStageData.targetPattern[i][j] != '1' && currentStageData.targetPattern[i][j] != '2')
                 {
                     Debug.LogError("Invalid target pattern");
                 }
-                if ((initialPattern[i][j] == '0' && targetPattern[i][j] != '0') ||
-                    (initialPattern[i][j] != '0' && targetPattern[i][j] == '0'))
+                if ((currentStageData.initialPattern[i][j] == '0' && currentStageData.targetPattern[i][j] != '0') ||
+                    (currentStageData.initialPattern[i][j] != '0' && currentStageData.targetPattern[i][j] == '0'))
                 {
                     Debug.LogError("Invalid initial and target pattern");
                 }
@@ -208,24 +207,40 @@ public class StageManager : MonoBehaviour
         }
     }
 
-    private void Test()
+    private void InitializeBoard()
     {
         StageLogic.CellExpression playerBoardCellExpression = new StageLogic.CellExpression(
-            height,
-            width,
-            isTopLeftTriangleDownward,
-            StageLogic.GetCellStateStringsFromStringExpression(initialPattern, height, width)
+            currentStageData.height,
+            currentStageData.width,
+            currentStageData.isTopLeftTriangleDownward,
+            StageLogic.GetCellStateStringsFromStringExpression(currentStageData.initialPattern, currentStageData.height, currentStageData.width)
         );
 
         StageLogic.CellExpression targetBoardCellExpression = new StageLogic.CellExpression(
-            height,
-            width,
-            isTopLeftTriangleDownward,
-            StageLogic.GetCellStateStringsFromStringExpression(targetPattern, height, width)
+            currentStageData.height,
+            currentStageData.width,
+            currentStageData.isTopLeftTriangleDownward,
+            StageLogic.GetCellStateStringsFromStringExpression(currentStageData.targetPattern, currentStageData.height, currentStageData.width)
         );
 
-        PlaceBoardFromCellExpression(targetBoardCellExpression, new Vector3(0, 0, 0), targetBoardSize, targetBoardSize, TargetBoardInstance, false);
-        playerTiles = PlaceBoardFromCellExpression(playerBoardCellExpression, new Vector3(0, 0, 0), playerBoardSize, playerBoardSize, PlayerBoardInstance, true);
+        PlaceBoardFromCellExpression(
+            targetBoardCellExpression,
+            Vector3.zero,
+            targetBoardSize,
+            targetBoardSize,
+            TargetBoardInstance,
+            false
+        );
+
+        playerTiles = PlaceBoardFromCellExpression(
+            playerBoardCellExpression,
+            Vector3.zero,
+            playerBoardSize,
+            playerBoardSize,
+            PlayerBoardInstance,
+            true
+        );
+
         playerBoard = StageLogic.CellExpression.GenerateBoard(playerBoardCellExpression);
         GenerateFrame();
     }
@@ -447,8 +462,8 @@ public class StageManager : MonoBehaviour
 
     private void ShowTexts()
     {
-        targetSteps3.GetComponent<UnityEngine.UI.Text>().text = steps3.ToString();
-        targetSteps2.GetComponent<UnityEngine.UI.Text>().text = steps2.ToString();
+        targetSteps3.GetComponent<UnityEngine.UI.Text>().text = currentStageData.starCondition.toGet3Stars.ToString();
+        targetSteps2.GetComponent<UnityEngine.UI.Text>().text = currentStageData.starCondition.toGet2Stars.ToString();
         targetSteps1.GetComponent<UnityEngine.UI.Text>().text = "∞";
     }
 
@@ -456,11 +471,11 @@ public class StageManager : MonoBehaviour
     {
         if (IsPuzzleComplete) return;
         IsPuzzleComplete = true;
-        if (steps <= steps3)
+        if (steps <= currentStageData.starCondition.toGet3Stars)
         {
             gameUIManager.ShowStageClearWindow(3);
         }
-        else if (steps <= steps2)
+        else if (steps <= currentStageData.starCondition.toGet2Stars)
         {
             gameUIManager.ShowStageClearWindow(2);
         }
@@ -472,14 +487,14 @@ public class StageManager : MonoBehaviour
 
     private static void IncrementSteps()
     {
-        StageManager stageManager = FindObjectOfType<StageManager>();
-        if (stageManager == null) return;
+        StageManager loadableStageManager = FindObjectOfType<StageManager>();
+        if (loadableStageManager == null) return;
 
-        if (stageManager.steps < stageManager.maxSteps)
+        if (loadableStageManager.steps < loadableStageManager.maxSteps)
         {
-            stageManager.steps++;
+            loadableStageManager.steps++;
         }
-        stageManager.currentSteps.GetComponent<UnityEngine.UI.Text>().text = "steps: " + stageManager.steps;
+        loadableStageManager.currentSteps.GetComponent<UnityEngine.UI.Text>().text = "steps: " + loadableStageManager.steps;
     }
 
     public void SetTargetPattern(BitArray pattern)
@@ -490,14 +505,14 @@ public class StageManager : MonoBehaviour
     private void MakeTargetPatternBitArray()
     {
         BitArray __targetPatternBitArray = new BitArray(0);
-        for (int i = height - 1; i >= 0; i--)
+        for (int i = currentStageData.height - 1; i >= 0; i--)
         {
-            for (int j = 0; j < width; j++)
+            for (int j = 0; j < currentStageData.width; j++)
             {
-                if (targetPattern[i][j] == '0') continue;
+                if (currentStageData.targetPattern[i][j] == '0') continue;
 
                 __targetPatternBitArray.Length++;
-                __targetPatternBitArray[__targetPatternBitArray.Length - 1] = targetPattern[i][j] == '1';
+                __targetPatternBitArray[__targetPatternBitArray.Length - 1] = currentStageData.targetPattern[i][j] == '1';
             }
         }
         targetPatternBitArray = __targetPatternBitArray;

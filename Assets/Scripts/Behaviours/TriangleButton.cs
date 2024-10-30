@@ -18,7 +18,6 @@ public class TriangleButton : Graphic, IPointerClickHandler, IPointerEnterHandle
         set { m_OnClick = value; }
     }
 
-    // ボタンの状態
     private bool m_Interactable = true;
     public bool interactable
     {
