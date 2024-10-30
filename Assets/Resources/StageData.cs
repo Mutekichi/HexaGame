@@ -13,11 +13,8 @@ namespace StageManagement
         public string[] targetPattern;
         public bool isTopLeftTriangleDownward;
         public StarCondition starCondition;
-
-        // コンストラクタ
         public StageData()
         {
-            // デフォルト値の設定
             stageId = 1;
             width = 1;
             height = 1;
@@ -27,7 +24,6 @@ namespace StageManagement
             starCondition = new StarCondition();
         }
 
-        // パターンの検証メソッド
         public bool ValidatePatterns()
         {
             if (initialPattern == null || targetPattern == null)
@@ -54,8 +50,6 @@ namespace StageManagement
 
             return true;
         }
-
-        // パターン文字列の検証
         private bool IsValidPatternString(string pattern)
         {
             foreach (char c in pattern)
@@ -65,8 +59,6 @@ namespace StageManagement
             }
             return true;
         }
-
-        // 初期パターンとターゲットパターンの整合性チェック
         public bool ValidatePatternConsistency()
         {
             if (!ValidatePatterns())
@@ -91,18 +83,14 @@ namespace StageManagement
     {
         public int toGet3Stars;
         public int toGet2Stars;
-
-        // コンストラクタ
         public StarCondition()
         {
             toGet3Stars = 10;
             toGet2Stars = 15;
         }
 
-        // 条件の妥当性チェック
         public bool IsValid()
         {
-            // 3つ星の条件は2つ星の条件より少ない手数であるべき
             return toGet3Stars > 0 && toGet2Stars > toGet3Stars;
         }
     }
@@ -111,14 +99,11 @@ namespace StageManagement
     public class StageDataCollection
     {
         public List<StageData> stages = new List<StageData>();
-
-        // コンストラクタ
         public StageDataCollection()
         {
             stages = new List<StageData>();
         }
 
-        // ステージIDの検証
         public bool ValidateStageIds()
         {
             HashSet<int> usedIds = new HashSet<int>();
@@ -130,7 +115,6 @@ namespace StageManagement
             return true;
         }
 
-        // 全ステージの検証
         public bool ValidateAllStages()
         {
             if (!ValidateStageIds())
@@ -146,10 +130,25 @@ namespace StageManagement
             return true;
         }
 
-        // ステージIDからステージデータを取得
         public StageData GetStageById(int stageId)
         {
             return stages.Find(stage => stage.stageId == stageId);
         }
+        private bool isChallengeMode = false;
+        private StageData timeAttackStageData;
+        private StageData normalStageData;
+
+        public void SetChallengeStage(StageData stageData)
+        {
+            timeAttackStageData = stageData;
+            isChallengeMode = true;
+        }
+
+        public StageData GetCurrentStageData()
+        {
+            return isChallengeMode ? timeAttackStageData : normalStageData;
+        }
+
+        public bool IsChallengeMode() => isChallengeMode;
     }
 }

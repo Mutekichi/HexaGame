@@ -15,6 +15,8 @@ public class StageManager : MonoBehaviour
     [SerializeField] private GameObject targetSteps2;
     [SerializeField] private GameObject targetSteps3;
     [SerializeField] private GameObject currentSteps;
+    [SerializeField] private GameObject CurrentStarCount;
+    [SerializeField] private GameObject StarForChallengeMode;
 
     [Header("Boards")]
     [SerializeField] private GameObject PlayerBoardInstance;
@@ -95,8 +97,8 @@ public class StageManager : MonoBehaviour
         ShowTexts();
         InitializeGameUIManager();
         InitializeBoard();
-
         TriangleTileBehaviour.OnBoardStateChanged += CheckBoardState;
+        UpdateForChallengeMode();
     }
 
     void OnDestroy()
@@ -470,17 +472,40 @@ public class StageManager : MonoBehaviour
     {
         if (IsPuzzleComplete) return;
         IsPuzzleComplete = true;
-        if (steps <= currentStageData.starCondition.toGet3Stars)
+
+        if (StageDataManager.Instance.IsChallengeMode())
         {
-            gameUIManager.ShowStageClearWindow(3);
-        }
-        else if (steps <= currentStageData.starCondition.toGet2Stars)
-        {
-            gameUIManager.ShowStageClearWindow(2);
+            int stars;
+            if (steps <= currentStageData.starCondition.toGet3Stars)
+            {
+                stars = 3;
+            }
+            else if (steps <= currentStageData.starCondition.toGet2Stars)
+            {
+                stars = 2;
+            }
+            else
+            {
+                stars = 1;
+            }
+
+            ChallengeManager.Instance.OnStageComplete(stars);
         }
         else
         {
-            gameUIManager.ShowStageClearWindow(1);
+
+            if (steps <= currentStageData.starCondition.toGet3Stars)
+            {
+                gameUIManager.ShowStageClearWindow(3);
+            }
+            else if (steps <= currentStageData.starCondition.toGet2Stars)
+            {
+                gameUIManager.ShowStageClearWindow(2);
+            }
+            else
+            {
+                gameUIManager.ShowStageClearWindow(1);
+            }
         }
     }
 
@@ -494,6 +519,25 @@ public class StageManager : MonoBehaviour
             loadableStageManager.steps++;
         }
         loadableStageManager.currentSteps.GetComponent<UnityEngine.UI.Text>().text = "steps: " + loadableStageManager.steps;
+    }
+    private void UpdateCurrentStarCount()
+    {
+        CurrentStarCount.GetComponent<UnityEngine.UI.Text>().text = "× " + ChallengeManager.Instance.GetTotalStars();
+    }
+    private void UpdateForChallengeMode()
+    {
+        if (ChallengeManager.Instance != null)
+        {
+            UpdateCurrentStarCount();
+        }
+        else if (CurrentStarCount != null)
+        {
+            CurrentStarCount.SetActive(false);
+        }
+        if (StarForChallengeMode != null)
+        {
+            StarForChallengeMode.SetActive(StageDataManager.Instance.IsChallengeMode());
+        }
     }
 
     public void SetTargetPattern(BitArray pattern)

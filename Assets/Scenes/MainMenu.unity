@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stageSelectButton: {fileID: 1838851322}
-  timeAttackButton: {fileID: 1903150366}
+  challengeButton: {fileID: 1903150366}
 --- !u!4 &241553096
 Transform:
   m_ObjectHideFlags: 0
