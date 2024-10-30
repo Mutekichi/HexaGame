@@ -5,27 +5,62 @@ using UnityEngine.SceneManagement;
 public class MainMenuManager : MonoBehaviour
 {
     [Header("Button References")]
-    [SerializeField] private Button stageSelectButton;
-    [SerializeField] private Button timeAttackButton;
+    [SerializeField] private GameObject stageSelectButton;
+    [SerializeField] private GameObject challengeButton;
+
+    private ICustomButton stageSelectButtonInterface;
+    private ICustomButton challengeButtonInterface;
 
     private void Start()
     {
-        // ボタンが割り当てられているか確認
-        if (stageSelectButton == null)
+        InitializeButtons();
+        SetupButtonListeners();
+    }
+
+    private void InitializeButtons()
+    {
+        stageSelectButtonInterface = GetButtonInterface(stageSelectButton);
+        challengeButtonInterface = GetButtonInterface(challengeButton);
+
+        if (stageSelectButtonInterface == null)
+            Debug.LogError("StageSelectButton interface initialization failed!");
+
+        if (challengeButtonInterface == null)
+            Debug.LogError("ChallengeButton interface initialization failed!");
+    }
+
+    private ICustomButton GetButtonInterface(GameObject buttonObject)
+    {
+        if (buttonObject == null) return null;
+
+        var standardWrapper = buttonObject.GetComponent<StandardButtonWrapper>();
+        if (standardWrapper == null)
         {
-            Debug.LogError("StageSelectButton is not assigned!");
-            return;
+            standardWrapper = buttonObject.GetComponent<Button>() != null
+                ? buttonObject.AddComponent<StandardButtonWrapper>()
+                : null;
         }
 
-        if (timeAttackButton == null)
+        var triangleWrapper = buttonObject.GetComponent<TriangleButtonWrapper>();
+        if (triangleWrapper == null)
         {
-            Debug.LogError("TimeAttackButton is not assigned!");
-            return;
+            triangleWrapper = buttonObject.GetComponent<TriangleButton>() != null
+                ? buttonObject.AddComponent<TriangleButtonWrapper>()
+                : null;
         }
 
-        // ボタンにリスナーを追加
-        stageSelectButton.onClick.AddListener(OnStageSelectButtonClicked);
-        timeAttackButton.onClick.AddListener(OnTimeAttackButtonClicked);
+        return (ICustomButton)standardWrapper ?? triangleWrapper;
+    }
+
+    private void SetupButtonListeners()
+    {
+        if (stageSelectButtonInterface == null || challengeButtonInterface == null)
+        {
+            Debug.LogError("Button interfaces not initialized!");
+            return;
+        }
+        stageSelectButtonInterface?.onClick.AddListener(OnStageSelectButtonClicked);
+        challengeButtonInterface?.onClick.AddListener(OnChallengeButtonClicked);
     }
 
     private void OnStageSelectButtonClicked()
@@ -34,19 +69,24 @@ public class MainMenuManager : MonoBehaviour
         SceneManager.LoadScene("StageSelect");
     }
 
-    private void OnTimeAttackButtonClicked()
+    private void OnChallengeButtonClicked()
     {
-        Debug.Log("Loading Time Attack Scene...");
-        SceneManager.LoadScene("TimeAttack");
+        Debug.Log("Starting Challenge Mode...");
+        if (ChallengeManager.Instance == null)
+        {
+            GameObject challengeManagerObj = new GameObject("ChallengeManager");
+            challengeManagerObj.AddComponent<ChallengeManager>();
+        }
+
+        ChallengeManager.Instance.StartChallenge();
     }
 
     private void OnDestroy()
     {
-        // リスナーの解除
-        if (stageSelectButton != null)
-            stageSelectButton.onClick.RemoveListener(OnStageSelectButtonClicked);
+        if (stageSelectButtonInterface?.onClick != null)
+            stageSelectButtonInterface.onClick.RemoveListener(OnStageSelectButtonClicked);
 
-        if (timeAttackButton != null)
-            timeAttackButton.onClick.RemoveListener(OnTimeAttackButtonClicked);
+        if (challengeButtonInterface?.onClick != null)
+            challengeButtonInterface.onClick.RemoveListener(OnChallengeButtonClicked);
     }
 }
