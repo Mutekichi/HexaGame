@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -11,28 +12,36 @@ public class StageManager : MonoBehaviour
     [SerializeField] private GameObject frameSpritePrefab;
 
     [Header("Texts")]
-    [SerializeField] private GameObject text1;
-    [SerializeField] private GameObject text2;
-    [SerializeField] private GameObject text3;
+    [SerializeField] private GameObject targetSteps1;
+    [SerializeField] private GameObject targetSteps2;
+    [SerializeField] private GameObject targetSteps3;
+    [SerializeField] private GameObject currentSteps;
 
     [Header("Boards")]
     [SerializeField] private GameObject PlayerBoardInstance;
     [SerializeField] private GameObject TargetBoardInstance;
+    [Header("Steps")]
+    public int steps3 = 13;
+    public int steps2 = 50;
 
     [Header("Properties")]
     [SerializeField] private int playerBoardSize = 11;
     [SerializeField] private int targetBoardSize = 6;
     [SerializeField] private int height;
     [SerializeField] private int width;
+    [SerializeField] private int maxSteps = 999;
     [SerializeField] private bool isTopLeftTriangleDownward;
     [SerializeField] private string[] initialPattern;
     [SerializeField] private string[] targetPattern;
 
     [HideInInspector] public StageLogic.Board playerBoard;
     [HideInInspector] public List<GameObject> playerTiles;
+    private GameUIManager gameUIManager;
 
     private BitArray targetPatternBitArray;
     private static readonly float distanceBetweenTileCenters = 2 / Mathf.Sqrt(3);
+    private bool IsPuzzleComplete { get; set; } = false;
+    private int steps = 0;
 
     private enum EdgeDirectionBetweenTiles
     {
@@ -87,6 +96,7 @@ public class StageManager : MonoBehaviour
         CheckIsBoardValid();
         MakeTargetPatternBitArray();
         ShowTexts();
+        InitializeGameUIManager();
         Test();
         TriangleTileBehaviour.OnBoardStateChanged += CheckBoardState;
     }
@@ -99,6 +109,8 @@ public class StageManager : MonoBehaviour
     public static void OnClickTile(int tileIndex)
     {
         if (tileIndex == -1) return;
+
+        IncrementSteps();
 
         StageManager stageManager = FindObjectOfType<StageManager>();
         if (stageManager == null || stageManager.playerBoard == null || stageManager.playerTiles == null) return;
@@ -141,7 +153,14 @@ public class StageManager : MonoBehaviour
         }
         return true;
     }
-
+    private void InitializeGameUIManager()
+    {
+        gameUIManager = FindObjectOfType<GameUIManager>();
+        if (gameUIManager == null)
+        {
+            Debug.LogError("GameUIManager not found");
+        }
+    }
     private void CheckBoardState(StageLogic.Board board)
     {
         if (board.MatchesPattern(targetPatternBitArray))
@@ -205,13 +224,13 @@ public class StageManager : MonoBehaviour
             StageLogic.GetCellStateStringsFromStringExpression(targetPattern, height, width)
         );
 
-        PlaceBoardFromCellExpression(targetBoardCellExpression, new Vector3(0, 0, 0), targetBoardSize, targetBoardSize, TargetBoardInstance);
-        playerTiles = PlaceBoardFromCellExpression(playerBoardCellExpression, new Vector3(0, 0, 0), playerBoardSize, playerBoardSize, PlayerBoardInstance);
+        PlaceBoardFromCellExpression(targetBoardCellExpression, new Vector3(0, 0, 0), targetBoardSize, targetBoardSize, TargetBoardInstance, false);
+        playerTiles = PlaceBoardFromCellExpression(playerBoardCellExpression, new Vector3(0, 0, 0), playerBoardSize, playerBoardSize, PlayerBoardInstance, true);
         playerBoard = StageLogic.CellExpression.GenerateBoard(playerBoardCellExpression);
         GenerateFrame();
     }
 
-    private List<GameObject> PlaceBoardFromCellExpression(StageLogic.CellExpression cellExpression, Vector3 center, float height, float width, GameObject objectToAttach = null)
+    private List<GameObject> PlaceBoardFromCellExpression(StageLogic.CellExpression cellExpression, Vector3 center, float height, float width, GameObject objectToAttach, bool isTileClickable = true)
     {
         List<GameObject> tiles = new List<GameObject>();
         float boardWidthByTileUnit = cellExpression.width * 0.5f + 0.5f;
@@ -238,7 +257,8 @@ public class StageManager : MonoBehaviour
                     !isDownwardTile,
                     cellExpression.cells[ih, iw] == StageLogic.CellState.Front,
                     tileIndex++,
-                    objectToAttach
+                    objectToAttach,
+                    isTileClickable
                 );
                 tiles.Add(tile);
             }
@@ -246,7 +266,7 @@ public class StageManager : MonoBehaviour
         return tiles;
     }
 
-    private GameObject PlaceTriangleTile(Vector3 position, float scale, bool isUpward, bool isFront, int tileIndex, GameObject objectToAttach = null)
+    private GameObject PlaceTriangleTile(Vector3 position, float scale, bool isUpward, bool isFront, int tileIndex, GameObject objectToAttach, bool isTileClickable)
     {
         GameObject triangleTile = Instantiate(TriangleTilePrefab, objectToAttach != null ? objectToAttach.transform : PlayerBoardInstance.transform);
         triangleTile.transform.localPosition = position;
@@ -259,6 +279,7 @@ public class StageManager : MonoBehaviour
             tileBehaviour.isFront = isFront;
             tileBehaviour.SetTileIndex(tileIndex);
             tileBehaviour.SetScale(scale);
+            tileBehaviour.IsClickable = isTileClickable;
         }
         return triangleTile;
     }
@@ -426,14 +447,39 @@ public class StageManager : MonoBehaviour
 
     private void ShowTexts()
     {
-        text3.GetComponent<UnityEngine.UI.Text>().text = "13";
-        text2.GetComponent<UnityEngine.UI.Text>().text = "50";
-        text1.GetComponent<UnityEngine.UI.Text>().text = "∞";
+        targetSteps3.GetComponent<UnityEngine.UI.Text>().text = steps3.ToString();
+        targetSteps2.GetComponent<UnityEngine.UI.Text>().text = steps2.ToString();
+        targetSteps1.GetComponent<UnityEngine.UI.Text>().text = "∞";
     }
 
     private void OnPuzzleComplete()
     {
-        Debug.Log("Puzzle Complete!");
+        if (IsPuzzleComplete) return;
+        IsPuzzleComplete = true;
+        if (steps <= steps3)
+        {
+            gameUIManager.ShowStageClearWindow(3);
+        }
+        else if (steps <= steps2)
+        {
+            gameUIManager.ShowStageClearWindow(2);
+        }
+        else
+        {
+            gameUIManager.ShowStageClearWindow(1);
+        }
+    }
+
+    private static void IncrementSteps()
+    {
+        StageManager stageManager = FindObjectOfType<StageManager>();
+        if (stageManager == null) return;
+
+        if (stageManager.steps < stageManager.maxSteps)
+        {
+            stageManager.steps++;
+        }
+        stageManager.currentSteps.GetComponent<UnityEngine.UI.Text>().text = "steps: " + stageManager.steps;
     }
 
     public void SetTargetPattern(BitArray pattern)
