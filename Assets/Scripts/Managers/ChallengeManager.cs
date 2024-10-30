@@ -4,13 +4,14 @@ using System.Collections.Generic;
 
 public class ChallengeManager : MonoBehaviour
 {
-    private const int TOTAL_STAGES = 5;
+    private const int TOTAL_STAGES = 4;
     private static ChallengeManager instance;
     public static ChallengeManager Instance => instance;
 
     private int currentStageIndex = 0;
     private int totalStars = 0;
     private List<int> stageStars = new List<int>();
+    private GameUIManager gameUIManager;
 
     private void Awake()
     {
@@ -21,6 +22,7 @@ public class ChallengeManager : MonoBehaviour
         }
         instance = this;
         DontDestroyOnLoad(gameObject);
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     public void StartChallenge()
@@ -30,7 +32,10 @@ public class ChallengeManager : MonoBehaviour
         stageStars.Clear();
         LoadNextChallengeStage();
     }
-
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        gameUIManager = FindObjectOfType<GameUIManager>();
+    }
     public void OnStageComplete(int stars)
     {
         stageStars.Add(stars);
@@ -56,8 +61,7 @@ public class ChallengeManager : MonoBehaviour
 
     private void OnChallengeComplete()
     {
-        Debug.Log("Challenge Complete!");
-        Debug.Log("Total Stars: " + totalStars);
+        gameUIManager.ShowChallengeClearWindow(totalStars);
     }
 
     public int GetTotalStars() => totalStars;
