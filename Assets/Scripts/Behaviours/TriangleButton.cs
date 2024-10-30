@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using UnityEngine.Events;
 
 [RequireComponent(typeof(CanvasRenderer))]
 public class TriangleButton : Graphic, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
@@ -9,7 +8,6 @@ public class TriangleButton : Graphic, IPointerClickHandler, IPointerEnterHandle
     private Vector2[] trianglePoints = new Vector2[3];
     private Canvas parentCanvas;
 
-    // UnityEventを追加
     [SerializeField]
     private Button.ButtonClickedEvent m_OnClick = new Button.ButtonClickedEvent();
     public Button.ButtonClickedEvent onClick
@@ -27,7 +25,6 @@ public class TriangleButton : Graphic, IPointerClickHandler, IPointerEnterHandle
             m_Interactable = value;
             if (!m_Interactable)
             {
-                // 無効時は薄いグレー
                 color = new Color(1f, 1f, 1f, 0.5f);
             }
             else
