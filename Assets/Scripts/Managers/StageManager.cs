@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using static TriangleTileBehaviour;
 
@@ -530,9 +531,9 @@ public class StageManager : MonoBehaviour
         {
             UpdateCurrentStarCount();
         }
-        else if (CurrentStarCount != null)
+        if (CurrentStarCount != null)
         {
-            CurrentStarCount.SetActive(false);
+            CurrentStarCount.SetActive(StageDataManager.Instance.IsChallengeMode());
         }
         if (StarForChallengeMode != null)
         {
