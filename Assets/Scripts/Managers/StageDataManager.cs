@@ -18,7 +18,9 @@ public class StageDataManager : MonoBehaviour
     }
 
     private StageDataCollection stageDataCollection;
-    private StageData currentStageData;
+    private StageData normalStageData;
+    private bool isChallengeMode = false;
+    private StageData timeAttackStageData;
 
     private void Awake()
     {
@@ -46,13 +48,25 @@ public class StageDataManager : MonoBehaviour
 
     public void SetCurrentStage(int stageId)
     {
-        currentStageData = stageDataCollection.stages.Find(s => s.stageId == stageId);
-        if (currentStageData == null)
+        normalStageData = stageDataCollection.stages.Find(s => s.stageId == stageId);
+        isChallengeMode = false;
+        if (normalStageData == null)
         {
             Debug.LogError($"Stage {stageId} not found!");
             return;
         }
     }
 
-    public StageData GetCurrentStageData() => currentStageData;
+    public void SetChallengeStage(StageData stageData)
+    {
+        timeAttackStageData = stageData;
+        isChallengeMode = true;
+    }
+
+    public StageData GetCurrentStageData()
+    {
+        return isChallengeMode ? timeAttackStageData : normalStageData;
+    }
+
+    public bool IsChallengeMode() => isChallengeMode;
 }

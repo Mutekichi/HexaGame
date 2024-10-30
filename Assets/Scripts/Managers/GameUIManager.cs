@@ -13,11 +13,14 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private GameObject backToStageSelectButton;
     [SerializeField] private GameObject closeWindowButton;
     [SerializeField] private GameObject stageClearWindow;
+    [SerializeField] private GameObject challengeClearWindow;
     [SerializeField] private GameObject Stars3;
     [SerializeField] private GameObject Stars2;
     [SerializeField] private GameObject Stars1;
     [SerializeField] private GameObject retryButtonOnStageClearWindow;
-    [SerializeField] private GameObject backToStageSelectButtonOnStageClearWindow;
+    [SerializeField] private GameObject backToMainMenuButtonOnStageClearWindow;
+    [SerializeField] private GameObject retryButtonOnChallengeClearWindow;
+    [SerializeField] private GameObject backToMainMenuButtonOnChallengeClearWindow;
 
     [Header("Settings")]
     [SerializeField] private bool pauseOnMenuShow = true;
@@ -27,7 +30,9 @@ public class GameUIManager : MonoBehaviour
     private ICustomButton backToStageSelectButtonInterface;
     private ICustomButton closeWindowButtonInterface;
     private ICustomButton retryButtonOnStageClearInterface;
-    private ICustomButton backToStageSelectButtonOnStageClearInterface;
+    private ICustomButton backToMainMenuButtonOnStageClearInterface;
+    private ICustomButton retryButtonOnChallengeClearInterface;
+    private ICustomButton backToMainMenuButtonOnChallengeClearInterface;
 
     private void Awake()
     {
@@ -48,7 +53,9 @@ public class GameUIManager : MonoBehaviour
         backToStageSelectButtonInterface = GetButtonInterface(backToStageSelectButton);
         closeWindowButtonInterface = GetButtonInterface(closeWindowButton);
         retryButtonOnStageClearInterface = GetButtonInterface(retryButtonOnStageClearWindow);
-        backToStageSelectButtonOnStageClearInterface = GetButtonInterface(backToStageSelectButtonOnStageClearWindow);
+        backToMainMenuButtonOnStageClearInterface = GetButtonInterface(backToMainMenuButtonOnStageClearWindow);
+        retryButtonOnChallengeClearInterface = GetButtonInterface(retryButtonOnChallengeClearWindow);
+        backToMainMenuButtonOnChallengeClearInterface = GetButtonInterface(backToMainMenuButtonOnChallengeClearWindow);
     }
 
     private ICustomButton GetButtonInterface(GameObject buttonObject)
@@ -84,22 +91,18 @@ public class GameUIManager : MonoBehaviour
 
     private void InitializeUI()
     {
-        if (menuWindow != null)
-        {
-            menuWindow.SetActive(false);
-        }
-
-        if (stageClearWindow != null)
-        {
-            stageClearWindow.SetActive(false);
-        }
+        if (menuWindow != null) menuWindow.SetActive(false);
+        if (stageClearWindow != null) stageClearWindow.SetActive(false);
+        if (challengeClearWindow != null) challengeClearWindow.SetActive(false);
 
         SetupButtonIfExists(hamburgerMenuButtonInterface);
         SetupButtonIfExists(retryButtonInterface);
         SetupButtonIfExists(backToStageSelectButtonInterface);
         SetupButtonIfExists(closeWindowButtonInterface);
         SetupButtonIfExists(retryButtonOnStageClearInterface);
-        SetupButtonIfExists(backToStageSelectButtonOnStageClearInterface);
+        SetupButtonIfExists(backToMainMenuButtonOnStageClearInterface);
+        SetupButtonIfExists(retryButtonOnChallengeClearInterface);
+        SetupButtonIfExists(backToMainMenuButtonOnChallengeClearInterface);
     }
 
     private void SetupButtonIfExists(ICustomButton button)
@@ -114,9 +117,35 @@ public class GameUIManager : MonoBehaviour
         }
     }
 
+    private void ToggleWindow(GameObject window, bool show)
+    {
+        if (window != null)
+        {
+            window.SetActive(show);
+            if (pauseOnMenuShow)
+            {
+                if (show) PauseGame();
+                else ResumeGame();
+            }
+        }
+    }
+
+    private void SetupClearWindowButton(ICustomButton button, string logMessage, bool isRetry)
+    {
+        button?.onClick.AddListener(() =>
+        {
+            Debug.Log(logMessage);
+            HideStageClearWindow();
+            HideChallengeClearWindow();
+            if (isRetry) OnRetryButtonClicked();
+            else OnBackToStageSelectButtonClicked();
+        });
+    }
+
     private void SetupButtons()
     {
         hamburgerMenuButtonInterface?.onClick.AddListener(ShowMenuWindow);
+        closeWindowButtonInterface?.onClick.AddListener(HideMenuWindow);
 
         retryButtonInterface?.onClick.AddListener(() =>
         {
@@ -130,21 +159,30 @@ public class GameUIManager : MonoBehaviour
             OnBackToStageSelectButtonClicked();
         });
 
-        closeWindowButtonInterface?.onClick.AddListener(HideMenuWindow);
+        SetupClearWindowButton(retryButtonOnStageClearInterface, "Retry button on Stage Clear clicked", true);
+        SetupClearWindowButton(backToMainMenuButtonOnStageClearInterface, "Back to stage select button clicked", false);
+        SetupClearWindowButton(retryButtonOnChallengeClearInterface, "Retry button on Challenge Clear clicked", true);
+        SetupClearWindowButton(backToMainMenuButtonOnChallengeClearInterface, "Back to main menu button clicked", false);
+    }
 
-        retryButtonOnStageClearInterface?.onClick.AddListener(() =>
+    private void SetActiveNumberObject(Transform parent, int number, int maxNumber)
+    {
+        Transform starCountsTransform = parent.Find("StarCounts");
+        if (starCountsTransform != null)
         {
-            Debug.Log("Retry button on Stage Clear clicked");
-            HideStageClearWindow();
-            OnRetryButtonClicked();
-        });
-
-        backToStageSelectButtonOnStageClearInterface?.onClick.AddListener(() =>
+            for (int i = 1; i <= maxNumber; i++)
+            {
+                Transform numberObj = starCountsTransform.Find(i.ToString());
+                if (numberObj != null)
+                {
+                    numberObj.gameObject.SetActive(i == number);
+                }
+            }
+        }
+        else
         {
-            Debug.Log("Back to stage select button clicked");
-            HideStageClearWindow();
-            OnBackToStageSelectButtonClicked();
-        });
+            Debug.LogWarning("StarCounts transform not found in challenge clear window");
+        }
     }
 
     public void ShowStageClearWindow(int stars)
@@ -164,9 +202,9 @@ public class GameUIManager : MonoBehaviour
                 retryButtonOnStageClearInterface.interactable = true;
             }
 
-            if (backToStageSelectButtonOnStageClearInterface != null)
+            if (backToMainMenuButtonOnStageClearInterface != null)
             {
-                backToStageSelectButtonOnStageClearInterface.interactable = true;
+                backToMainMenuButtonOnStageClearInterface.interactable = true;
             }
 
             if (pauseOnMenuShow)
@@ -176,23 +214,23 @@ public class GameUIManager : MonoBehaviour
         }
     }
 
-    private void HideStageClearWindow()
+    public void ShowChallengeClearWindow(int stars)
     {
-        if (stageClearWindow != null)
+        if (challengeClearWindow != null)
         {
-            stageClearWindow.SetActive(false);
-            if (pauseOnMenuShow)
-            {
-                ResumeGame();
-            }
-        }
-    }
+            challengeClearWindow.SetActive(true);
+            SetActiveNumberObject(challengeClearWindow.transform, stars, 12);
 
-    private void ShowMenuWindow()
-    {
-        if (menuWindow != null)
-        {
-            menuWindow.SetActive(true);
+            if (retryButtonOnChallengeClearInterface != null)
+            {
+                retryButtonOnChallengeClearInterface.interactable = true;
+            }
+
+            if (backToMainMenuButtonOnChallengeClearInterface != null)
+            {
+                backToMainMenuButtonOnChallengeClearInterface.interactable = true;
+            }
+
             if (pauseOnMenuShow)
             {
                 PauseGame();
@@ -200,17 +238,10 @@ public class GameUIManager : MonoBehaviour
         }
     }
 
-    private void HideMenuWindow()
-    {
-        if (menuWindow != null)
-        {
-            menuWindow.SetActive(false);
-            if (pauseOnMenuShow)
-            {
-                ResumeGame();
-            }
-        }
-    }
+    private void ShowMenuWindow() => ToggleWindow(menuWindow, true);
+    private void HideMenuWindow() => ToggleWindow(menuWindow, false);
+    private void HideStageClearWindow() => ToggleWindow(stageClearWindow, false);
+    private void HideChallengeClearWindow() => ToggleWindow(challengeClearWindow, false);
 
     private void OnRetryButtonClicked()
     {
@@ -250,6 +281,11 @@ public class GameUIManager : MonoBehaviour
         return stageClearWindow != null && stageClearWindow.activeSelf;
     }
 
+    public bool IsChallengeClearWindowVisible()
+    {
+        return challengeClearWindow != null && challengeClearWindow.activeSelf;
+    }
+
     private void OnDestroy()
     {
         CleanupButtonListeners(hamburgerMenuButtonInterface);
@@ -257,7 +293,9 @@ public class GameUIManager : MonoBehaviour
         CleanupButtonListeners(backToStageSelectButtonInterface);
         CleanupButtonListeners(closeWindowButtonInterface);
         CleanupButtonListeners(retryButtonOnStageClearInterface);
-        CleanupButtonListeners(backToStageSelectButtonOnStageClearInterface);
+        CleanupButtonListeners(backToMainMenuButtonOnStageClearInterface);
+        CleanupButtonListeners(retryButtonOnChallengeClearInterface);
+        CleanupButtonListeners(backToMainMenuButtonOnChallengeClearInterface);
     }
 
     private void CleanupButtonListeners(ICustomButton button)
@@ -276,7 +314,7 @@ public class GameUIManager : MonoBehaviour
             {
                 HideMenuWindow();
             }
-            else if (!IsStageClearWindowVisible()) // ステージクリアウィンドウが表示されていない場合のみメニューを表示
+            else if (!IsStageClearWindowVisible() && !IsChallengeClearWindowVisible())
             {
                 ShowMenuWindow();
             }

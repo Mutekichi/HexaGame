@@ -6,10 +6,10 @@ public class MainMenuManager : MonoBehaviour
 {
     [Header("Button References")]
     [SerializeField] private GameObject stageSelectButton;
-    [SerializeField] private GameObject timeAttackButton;
+    [SerializeField] private GameObject challengeButton;
 
     private ICustomButton stageSelectButtonInterface;
-    private ICustomButton timeAttackButtonInterface;
+    private ICustomButton challengeButtonInterface;
 
     private void Start()
     {
@@ -20,13 +20,13 @@ public class MainMenuManager : MonoBehaviour
     private void InitializeButtons()
     {
         stageSelectButtonInterface = GetButtonInterface(stageSelectButton);
-        timeAttackButtonInterface = GetButtonInterface(timeAttackButton);
+        challengeButtonInterface = GetButtonInterface(challengeButton);
 
         if (stageSelectButtonInterface == null)
             Debug.LogError("StageSelectButton interface initialization failed!");
 
-        if (timeAttackButtonInterface == null)
-            Debug.LogError("TimeAttackButton interface initialization failed!");
+        if (challengeButtonInterface == null)
+            Debug.LogError("ChallengeButton interface initialization failed!");
     }
 
     private ICustomButton GetButtonInterface(GameObject buttonObject)
@@ -54,13 +54,13 @@ public class MainMenuManager : MonoBehaviour
 
     private void SetupButtonListeners()
     {
-        if (stageSelectButtonInterface == null || timeAttackButtonInterface == null)
+        if (stageSelectButtonInterface == null || challengeButtonInterface == null)
         {
             Debug.LogError("Button interfaces not initialized!");
             return;
         }
         stageSelectButtonInterface?.onClick.AddListener(OnStageSelectButtonClicked);
-        timeAttackButtonInterface?.onClick.AddListener(OnTimeAttackButtonClicked);
+        challengeButtonInterface?.onClick.AddListener(OnChallengeButtonClicked);
     }
 
     private void OnStageSelectButtonClicked()
@@ -69,10 +69,16 @@ public class MainMenuManager : MonoBehaviour
         SceneManager.LoadScene("StageSelect");
     }
 
-    private void OnTimeAttackButtonClicked()
+    private void OnChallengeButtonClicked()
     {
-        Debug.Log("Loading Time Attack Scene...");
-        SceneManager.LoadScene("TimeAttack");
+        Debug.Log("Starting Challenge Mode...");
+        if (ChallengeManager.Instance == null)
+        {
+            GameObject challengeManagerObj = new GameObject("ChallengeManager");
+            challengeManagerObj.AddComponent<ChallengeManager>();
+        }
+
+        ChallengeManager.Instance.StartChallenge();
     }
 
     private void OnDestroy()
@@ -80,7 +86,7 @@ public class MainMenuManager : MonoBehaviour
         if (stageSelectButtonInterface?.onClick != null)
             stageSelectButtonInterface.onClick.RemoveListener(OnStageSelectButtonClicked);
 
-        if (timeAttackButtonInterface?.onClick != null)
-            timeAttackButtonInterface.onClick.RemoveListener(OnTimeAttackButtonClicked);
+        if (challengeButtonInterface?.onClick != null)
+            challengeButtonInterface.onClick.RemoveListener(OnChallengeButtonClicked);
     }
 }
