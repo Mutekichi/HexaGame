@@ -7,16 +7,24 @@ using UnityEngine.UIElements;
 public class StageManager : MonoBehaviour
 {
     public int stageNumber;
+    [Header("Prefabs")]
     [SerializeField] GameObject TriangleTilePrefab;
     [SerializeField] private GameObject frameSpritePrefab;
-    public GameObject PlayerBoardInstance;
-    public GameObject TargetBoardInstance;
+
+    [Header("Texts")]
+    [SerializeField] private GameObject text1;
+    [SerializeField] private GameObject text2;
+    [SerializeField] private GameObject text3;
+    [Header("Boards")]
+    [SerializeField] private GameObject PlayerBoardInstance;
+    [SerializeField] private GameObject TargetBoardInstance;
 
     [HideInInspector]
     public StageLogic.Board playerBoard;
 
     [HideInInspector]
     public List<GameObject> playerTiles;
+    [Header("Properties")]
     [SerializeField] private int height;
     [SerializeField] private int width;
     [SerializeField] private bool isTopLeftTriangleDownward;
@@ -77,6 +85,7 @@ public class StageManager : MonoBehaviour
     {
         CheckIsBoardValid();
         MakeTargetPatternBitArray();
+        ShowTexts();
         Test();
         TriangleTileBehaviour.OnBoardStateChanged += CheckBoardState;
     }
@@ -131,7 +140,12 @@ public class StageManager : MonoBehaviour
             }
         }
     }
-
+    private void ShowTexts()
+    {
+        text3.GetComponent<UnityEngine.UI.Text>().text = "13";
+        text2.GetComponent<UnityEngine.UI.Text>().text = "50";
+        text1.GetComponent<UnityEngine.UI.Text>().text = "∞";
+    }
     private void OnPuzzleComplete()
     {
         Debug.Log("Puzzle Complete!");

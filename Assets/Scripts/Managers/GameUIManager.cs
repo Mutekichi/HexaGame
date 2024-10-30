@@ -96,28 +96,19 @@ public class GameUIManager : MonoBehaviour
 
     private void SetupButtons()
     {
-        if (hamburgerMenuButtonInterface != null)
-        {
-            hamburgerMenuButtonInterface.onClick.AddListener(ShowMenuWindow);
-        }
+        hamburgerMenuButtonInterface?.onClick.AddListener(ShowMenuWindow);
 
-        if (retryButtonInterface != null)
-        {
-            retryButtonInterface.onClick.AddListener(() =>
+        retryButtonInterface?.onClick.AddListener(() =>
             {
                 HideMenuWindow();
                 OnRetryButtonClicked();
             });
-        }
 
-        if (backToStageSelectButtonInterface != null)
-        {
-            backToStageSelectButtonInterface.onClick.AddListener(() =>
+        backToStageSelectButtonInterface?.onClick.AddListener(() =>
             {
                 HideMenuWindow();
                 OnBackToStageSelectButtonClicked();
             });
-        }
 
         if (closeWindowButtonInterface != null)
         {
