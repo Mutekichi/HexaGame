@@ -1,8 +1,5 @@
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
-[ExecuteAlways]
 public class TriangleTileBehaviour : MonoBehaviour
 {
     private Camera mainCamera;
@@ -20,6 +17,7 @@ public class TriangleTileBehaviour : MonoBehaviour
             }
         }
     }
+
     public int tileIndex;
     public void SetTileIndex(int index)
     {
@@ -29,7 +27,6 @@ public class TriangleTileBehaviour : MonoBehaviour
     {
         return tileIndex;
     }
-    public int TileIndex => tileIndex;
     public float scale;
     public void SetScale(float scale)
     {
@@ -39,6 +36,7 @@ public class TriangleTileBehaviour : MonoBehaviour
     {
         return scale;
     }
+    public bool IsClickable { get; set; } = true;
 
     [SerializeField] private bool _isFront = true;
     public bool isFront
@@ -64,7 +62,8 @@ public class TriangleTileBehaviour : MonoBehaviour
     [SerializeField] private float flipDuration = 0.3f;
     public delegate void BoardStateChangedHandler(StageLogic.Board board);
     public static event BoardStateChangedHandler OnBoardStateChanged;
-    private enum FlipState
+
+    public enum FlipState
     {
         NotFlipping,
         FlippingBeforeHalf,
@@ -72,7 +71,7 @@ public class TriangleTileBehaviour : MonoBehaviour
     }
 
     private float flipProgress;
-    private FlipState flipState = FlipState.NotFlipping;
+    public FlipState flipState { get; private set; } = FlipState.NotFlipping;
     private Collider2D tileCollider { get { return isUpward ? upwardCollider : downwardCollider; } }
     private StageManager stageManager;
 
@@ -112,7 +111,6 @@ public class TriangleTileBehaviour : MonoBehaviour
     private void OnValidate()
     {
         ValidateSprites();
-        // UpdatePositionAndState();
     }
 
     private void ValidateSprites()
@@ -125,7 +123,7 @@ public class TriangleTileBehaviour : MonoBehaviour
 
     private void CheckForClick()
     {
-        if (GameUIManager.IsMenuVisible())
+        if (GameUIManager.IsMenuVisible() || !IsClickable || stageManager == null)
         {
             return;
         }
@@ -136,10 +134,7 @@ public class TriangleTileBehaviour : MonoBehaviour
             if (IsClickedOnTile(mousePosition))
             {
                 Debug.Log("tile" + tileIndex + " clicked");
-                if (CheckAllNeighborsBeforeFlip())
-                {
-                    FlipNeighbors();
-                }
+                StageManager.OnClickTile(tileIndex);
             }
         }
     }
@@ -188,7 +183,7 @@ public class TriangleTileBehaviour : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, 0.1f);
     }
 
-    private void StartFlip()
+    public void StartFlip()
     {
         if (flipState == FlipState.NotFlipping)
         {
@@ -230,46 +225,5 @@ public class TriangleTileBehaviour : MonoBehaviour
         {
             transform.localScale = new Vector3(scale * (flipProgress - 0.5f) * 2, scale, 1);
         }
-    }
-
-    private void FlipNeighbors()
-    {
-        if (tileIndex == -1 || stageManager == null) return;
-
-        StageLogic.Tile currentTile = stageManager.playerBoard.tiles[tileIndex];
-
-        foreach (int neighborIndex in currentTile.neighbors)
-        {
-            if (neighborIndex != -1 && neighborIndex < stageManager.playerTiles.Count)
-            {
-                GameObject neighborObject = stageManager.playerTiles[neighborIndex];
-                TriangleTileBehaviour neighborTile = neighborObject.GetComponent<TriangleTileBehaviour>();
-                if (neighborTile != null)
-                {
-                    neighborTile.StartFlip();
-                }
-            }
-        }
-    }
-
-    private bool CheckAllNeighborsBeforeFlip()
-    {
-        if (tileIndex == -1 || stageManager == null) return true;
-
-        StageLogic.Tile currentTile = stageManager.playerBoard.tiles[tileIndex];
-
-        foreach (int neighborIndex in currentTile.neighbors)
-        {
-            if (neighborIndex != -1 && neighborIndex < stageManager.playerTiles.Count)
-            {
-                GameObject neighborObject = stageManager.playerTiles[neighborIndex];
-                TriangleTileBehaviour neighborTile = neighborObject.GetComponent<TriangleTileBehaviour>();
-                if (neighborTile != null && neighborTile.flipState != FlipState.NotFlipping)
-                {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 }
