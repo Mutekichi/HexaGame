@@ -4,6 +4,8 @@ using UnityEngine.SceneManagement;
 
 public class StageSelectManager : MonoBehaviour
 {
+    [SerializeField] private GameObject HomeButton;
+    private ICustomButton HomeButtonInterface;
     private static StageSelectManager instance;
 
     [Header("Stage Select Buttons")]
@@ -44,6 +46,7 @@ public class StageSelectManager : MonoBehaviour
 
     private void InitializeButtonInterfaces()
     {
+        HomeButtonInterface = GetButtonInterface(HomeButton);
         for (int i = 0; i < entranceButtons.Length; i++)
         {
             if (entranceButtons[i] != null)
@@ -88,6 +91,7 @@ public class StageSelectManager : MonoBehaviour
 
     private void InitializeUI()
     {
+        SetupButtonIfExists(HomeButtonInterface);
         for (int i = 0; i < entranceButtonInterfaces.Length; i++)
         {
             SetupButtonIfExists(entranceButtonInterfaces[i]);
@@ -104,6 +108,13 @@ public class StageSelectManager : MonoBehaviour
 
     private void SetupButtons()
     {
+        if (HomeButtonInterface == null)
+        {
+            Debug.LogError("HomeButton interface initialization failed!");
+            return;
+        }
+        HomeButtonInterface?.onClick.AddListener(OnHomeButtonClicked);
+
         for (int i = 0; i < entranceButtonInterfaces.Length; i++)
         {
             int stageId = i + 1;
@@ -112,6 +123,11 @@ public class StageSelectManager : MonoBehaviour
                 entranceButtonInterfaces[i].onClick.AddListener(() => OnStageButtonClicked(stageId));
             }
         }
+    }
+
+    private void OnHomeButtonClicked()
+    {
+        SceneManager.LoadScene("MainMenu");
     }
 
     private void OnStageButtonClicked(int stageId)
@@ -128,6 +144,7 @@ public class StageSelectManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        CleanupButtonListeners(HomeButtonInterface);
         for (int i = 0; i < entranceButtonInterfaces.Length; i++)
         {
             CleanupButtonListeners(entranceButtonInterfaces[i]);
