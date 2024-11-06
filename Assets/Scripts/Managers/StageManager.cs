@@ -167,11 +167,6 @@ public class StageManager : MonoBehaviour
         {
             OnPuzzleComplete();
         }
-        else
-        {
-            DebugBitArray(board.boardState, "Current Board State");
-
-        }
     }
 
     private void CheckIsBoardValid()
