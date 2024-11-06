@@ -86,14 +86,41 @@ public class StageLogic
             }
             return new string(stateChars);
         }
+
+        public string[] GetStringExpression()
+        {
+            string[] expression = new string[tiles.Length];
+            for (int i = 0; i < tiles.Length; i++)
+            {
+                expression[i] = tiles[i].isFront ? "1" : "0";
+            }
+            return expression;
+        }
     }
 
-    public struct CellExpression
+    public class CellExpression
     {
         public int height;
         public int width;
         public bool isTopLeftTriangleDownward;
         public CellState[,] cells;
+        public int Size
+        {
+            get => CalcBoardSize(cells);
+            set => Size = value;
+        }
+        public CellExpression Clone()
+        {
+            CellState[,] clonedCells = new CellState[height, width];
+            for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j++)
+                {
+                    clonedCells[i, j] = cells[i, j];
+                }
+            }
+            return new CellExpression(height, width, isTopLeftTriangleDownward, clonedCells);
+        }
 
         public CellExpression(int height, int width, bool isTopLeftTriangleDownward, CellState[,] cells)
         {
@@ -103,6 +130,45 @@ public class StageLogic
             this.cells = cells;
         }
 
+        public void FlipCell(int ih, int iw)
+        {
+            if (ih >= 0 && ih < height && iw >= 0 && iw < width && cells[ih, iw] != CellState.Empty)
+            {
+                cells[ih, iw] = cells[ih, iw] == CellState.Front ? CellState.Back : CellState.Front;
+            }
+        }
+
+        public void FlipNeighbors(int ih, int iw)
+        {
+            if (ih >= 0 && ih < height && iw >= 0 && iw < width && cells[ih, iw] != CellState.Empty)
+            {
+                if (iw < width - 1 && cells[height - 1 - ih, iw + 1] != CellState.Empty)
+                {
+                    FlipCell(ih, iw + 1);
+                }
+
+                if (iw > 0 && cells[height - 1 - ih, iw - 1] != CellState.Empty)
+                {
+                    FlipCell(ih, iw - 1);
+                }
+
+                bool isDownward = IsDownwardTileFromIndex(height - 1 - ih, iw, isTopLeftTriangleDownward);
+                if (!isDownward)
+                {
+                    if (ih > 0 && cells[height - 1 - ih + 1, iw] != CellState.Empty)
+                    {
+                        FlipCell(ih - 1, iw);
+                    }
+                }
+                else
+                {
+                    if (ih < height - 1 && cells[height - 1 - ih - 1, iw] != CellState.Empty)
+                    {
+                        FlipCell(ih + 1, iw);
+                    }
+                }
+            }
+        }
         public static Board GenerateBoard(CellExpression cellExpression)
         {
             int height = cellExpression.height;
@@ -273,6 +339,37 @@ public class StageLogic
             }
         }
         return cellExpression;
+    }
+
+    public static string[] GetStringExpressionFromCellExpression(CellExpression cellExpression)
+    {
+        string[] stringExpression = new string[cellExpression.height];
+        for (int i = 0; i < cellExpression.height; ++i)
+        {
+            stringExpression[i] = "";
+            for (int j = 0; j < cellExpression.width; ++j)
+            {
+                switch (cellExpression.cells[i, j])
+                {
+                    case CellState.Empty:
+                        stringExpression[i] += "0";
+                        break;
+                    case CellState.Front:
+                        stringExpression[i] += "1";
+                        break;
+                    case CellState.Back:
+                        stringExpression[i] += "2";
+                        break;
+                }
+            }
+        }
+        return stringExpression;
+    }
+
+    public static Board GetBoardFromStringExpression(string[] stringExpression, int height, int width, bool isTopLeftTriangleDownward)
+    {
+        CellState[,] cellExpression = GetCellStateStringsFromStringExpression(stringExpression, height, width);
+        return CellExpression.GenerateBoard(new CellExpression(height, width, isTopLeftTriangleDownward, cellExpression));
     }
 
     public static (float width, float height) GetBoardSizeFromCellExpression(CellExpression cellExpression)

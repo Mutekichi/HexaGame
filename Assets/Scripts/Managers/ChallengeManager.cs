@@ -54,7 +54,7 @@ public class ChallengeManager : MonoBehaviour
 
     private void LoadNextChallengeStage()
     {
-        StageData randomStage = ChallengeStageGenerator.GenerateRandomStage(7, 4);
+        StageData randomStage = ChallengeStageGenerator.GenerateRandomStage(currentStageIndex + 1);
         StageDataManager.Instance.SetChallengeStage(randomStage);
         SceneManager.LoadScene("NormalStage");
     }

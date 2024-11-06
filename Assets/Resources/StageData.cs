@@ -134,21 +134,5 @@ namespace StageManagement
         {
             return stages.Find(stage => stage.stageId == stageId);
         }
-        private bool isChallengeMode = false;
-        private StageData timeAttackStageData;
-        private StageData normalStageData;
-
-        public void SetChallengeStage(StageData stageData)
-        {
-            timeAttackStageData = stageData;
-            isChallengeMode = true;
-        }
-
-        public StageData GetCurrentStageData()
-        {
-            return isChallengeMode ? timeAttackStageData : normalStageData;
-        }
-
-        public bool IsChallengeMode() => isChallengeMode;
     }
 }
