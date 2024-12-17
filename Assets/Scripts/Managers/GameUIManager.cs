@@ -24,6 +24,8 @@ public class GameUIManager : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] private bool pauseOnMenuShow = true;
+    [Header("Audio")]
+    [SerializeField] private AudioClip mainButtonSound;
 
     private ICustomButton hamburgerMenuButtonInterface;
     private ICustomButton retryButtonInterface;
