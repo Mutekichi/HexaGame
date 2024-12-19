@@ -110,6 +110,8 @@ public class StageManager : MonoBehaviour
     {
         if (tileIndex == -1) return;
 
+        AudioManager.Instance.PlayTileFlipSound();
+
         IncrementSteps();
 
         StageManager stageManager = FindObjectOfType<StageManager>();
@@ -467,6 +469,8 @@ public class StageManager : MonoBehaviour
     {
         if (IsPuzzleComplete) return;
         IsPuzzleComplete = true;
+
+        AudioManager.Instance.PlayStageClearSound();
 
         if (StageDataManager.Instance.IsChallengeMode())
         {

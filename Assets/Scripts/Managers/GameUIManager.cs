@@ -144,8 +144,17 @@ public class GameUIManager : MonoBehaviour
 
     private void SetupButtons()
     {
-        hamburgerMenuButtonInterface?.onClick.AddListener(ShowMenuWindow);
-        closeWindowButtonInterface?.onClick.AddListener(HideMenuWindow);
+        hamburgerMenuButtonInterface?.onClick.AddListener(() =>
+        {
+            ShowMenuWindow();
+            AudioManager.Instance.PlaySubButtonSound();
+        });
+        closeWindowButtonInterface?.onClick.AddListener(() =>
+        {
+
+            HideMenuWindow();
+            AudioManager.Instance.PlaySubButtonSound();
+        });
 
         retryButtonInterface?.onClick.AddListener(() =>
         {
@@ -182,6 +191,14 @@ public class GameUIManager : MonoBehaviour
         else
         {
             Debug.LogWarning("StarCounts transform not found in challenge clear window");
+        }
+    }
+
+    public void PlayAudioClip(AudioClip clip)
+    {
+        if (clip != null)
+        {
+            AudioSource.PlayClipAtPoint(clip, Camera.main.transform.position);
         }
     }
 
@@ -245,6 +262,7 @@ public class GameUIManager : MonoBehaviour
 
     private void OnRetryButtonClicked()
     {
+        AudioManager.Instance.PlayMainButtonSound();
         ResumeGame();
         string currentSceneName = SceneManager.GetActiveScene().name;
         LoadSceneWithTransition(currentSceneName);
@@ -252,12 +270,21 @@ public class GameUIManager : MonoBehaviour
 
     private void OnBackToStageSelectButtonClicked()
     {
+        AudioManager.Instance.PlaySubButtonSound();
         ResumeGame();
-        LoadSceneWithTransition("StageSelect");
+        if (StageDataManager.Instance.IsChallengeMode())
+        {
+            LoadSceneWithTransition("MainMenu");
+        }
+        else
+        {
+            LoadSceneWithTransition("StageSelect");
+        }
     }
 
     private void LoadSceneWithTransition(string sceneName)
     {
+
         SceneManager.LoadScene(sceneName);
     }
 
