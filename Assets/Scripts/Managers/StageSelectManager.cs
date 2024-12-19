@@ -127,12 +127,13 @@ public class StageSelectManager : MonoBehaviour
 
     private void OnHomeButtonClicked()
     {
+        AudioManager.Instance.PlaySubButtonSound();
         SceneManager.LoadScene("MainMenu");
     }
 
     private void OnStageButtonClicked(int stageId)
     {
-        Debug.Log($"Loading stage {stageId}");
+        AudioManager.Instance.PlayMainButtonSound();
         LoadStage(stageId);
     }
 

@@ -1222,7 +1222,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.60084647, g: 0.7798742, b: 0.6347428, a: 0}
+  m_BackGroundColor: {r: 0.36862746, g: 0.7764706, b: 0.28235295, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -4013,6 +4013,8 @@ MonoBehaviour:
   targetSteps2: {fileID: 673865217}
   targetSteps3: {fileID: 411131092}
   currentSteps: {fileID: 337980101}
+  CurrentStarCount: {fileID: 0}
+  StarForChallengeMode: {fileID: 0}
   PlayerBoardInstance: {fileID: 3353368580524885922}
   TargetBoardInstance: {fileID: 5040008446564551124}
   playerTiles: []
@@ -4231,11 +4233,14 @@ MonoBehaviour:
   backToStageSelectButton: {fileID: 4977578006136798907}
   closeWindowButton: {fileID: 4451562775625225935}
   stageClearWindow: {fileID: 561569726}
+  challengeClearWindow: {fileID: 0}
   Stars3: {fileID: 548919138}
   Stars2: {fileID: 1087123279}
   Stars1: {fileID: 2003374466}
   retryButtonOnStageClearWindow: {fileID: 498763447}
-  backToStageSelectButtonOnStageClearWindow: {fileID: 257134151}
+  backToMainMenuButtonOnStageClearWindow: {fileID: 0}
+  retryButtonOnChallengeClearWindow: {fileID: 0}
+  backToMainMenuButtonOnChallengeClearWindow: {fileID: 0}
   pauseOnMenuShow: 1
 --- !u!4 &8798282192979727609
 Transform:

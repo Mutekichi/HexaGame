@@ -10,7 +10,6 @@ public class MainMenuManager : MonoBehaviour
 
     private ICustomButton stageSelectButtonInterface;
     private ICustomButton challengeButtonInterface;
-
     private void Start()
     {
         InitializeButtons();
@@ -65,6 +64,7 @@ public class MainMenuManager : MonoBehaviour
 
     private void OnStageSelectButtonClicked()
     {
+        AudioManager.Instance.PlayMainButtonSound();
         Debug.Log("Loading Stage Select Scene...");
         SceneManager.LoadScene("StageSelect");
     }
@@ -77,7 +77,7 @@ public class MainMenuManager : MonoBehaviour
             GameObject challengeManagerObj = new GameObject("ChallengeManager");
             challengeManagerObj.AddComponent<ChallengeManager>();
         }
-
+        AudioManager.Instance.PlayMainButtonSound();
         ChallengeManager.Instance.StartChallenge();
     }
 
